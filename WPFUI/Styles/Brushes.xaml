@@ -1,0 +1,61 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ================================================================= -->
+    <!-- Color Definitions -->
+    <!-- ================================================================= -->
+    <Color x:Key="ColorPrimary">#0078D4</Color>
+    <Color x:Key="ColorPrimaryHover">#106EBE</Color>
+    <Color x:Key="ColorPrimaryPressed">#005A9E</Color>
+    <Color x:Key="ColorPrimaryDisabled">#C8C6C4</Color>
+
+    <Color x:Key="ColorBgWindow">#F3F4F6</Color>
+    <Color x:Key="ColorBgCard">#FFFFFF</Color>
+    <Color x:Key="ColorBgControl">#FFFFFF</Color>
+    <Color x:Key="ColorBgControlHover">#F3F4F6</Color>
+    <Color x:Key="ColorBgControlPressed">#EDEBE9</Color>
+    <Color x:Key="ColorBgControlDisabled">#F3F2F1</Color>
+
+    <Color x:Key="ColorBorder">#D2D6DC</Color>
+    <Color x:Key="ColorBorderHover">#8A8886</Color>
+    <Color x:Key="ColorBorderFocused">#0078D4</Color>
+    <Color x:Key="ColorBorderDisabled">#E1DFDD</Color>
+
+    <Color x:Key="ColorText">#2D3748</Color>
+    <Color x:Key="ColorTextSecondary">#718096</Color>
+    <Color x:Key="ColorTextDisabled">#A19F9D</Color>
+    <Color x:Key="ColorTextInverted">#FFFFFF</Color>
+
+    <!-- ================================================================= -->
+    <!-- SolidColorBrushes -->
+    <!-- ================================================================= -->
+    <SolidColorBrush x:Key="BrushPrimary" Color="{StaticResource ColorPrimary}" />
+    <SolidColorBrush x:Key="BrushPrimaryHover" Color="{StaticResource ColorPrimaryHover}" />
+    <SolidColorBrush x:Key="BrushPrimaryPressed" Color="{StaticResource ColorPrimaryPressed}" />
+    <SolidColorBrush x:Key="BrushPrimaryDisabled" Color="{StaticResource ColorPrimaryDisabled}" />
+
+    <SolidColorBrush x:Key="BrushBgWindow" Color="{StaticResource ColorBgWindow}" />
+    <SolidColorBrush x:Key="BrushBgCard" Color="{StaticResource ColorBgCard}" />
+    <SolidColorBrush x:Key="BrushBgControl" Color="{StaticResource ColorBgControl}" />
+    <SolidColorBrush x:Key="BrushBgControlHover" Color="{StaticResource ColorBgControlHover}" />
+    <SolidColorBrush x:Key="BrushBgControlPressed" Color="{StaticResource ColorBgControlPressed}" />
+    <SolidColorBrush x:Key="BrushBgControlDisabled" Color="{StaticResource ColorBgControlDisabled}" />
+
+    <SolidColorBrush x:Key="BrushBorder" Color="{StaticResource ColorBorder}" />
+    <SolidColorBrush x:Key="BrushBorderHover" Color="{StaticResource ColorBorderHover}" />
+    <SolidColorBrush x:Key="BrushBorderFocused" Color="{StaticResource ColorBorderFocused}" />
+    <SolidColorBrush x:Key="BrushBorderDisabled" Color="{StaticResource ColorBorderDisabled}" />
+
+    <SolidColorBrush x:Key="BrushText" Color="{StaticResource ColorText}" />
+    <SolidColorBrush x:Key="BrushTextSecondary" Color="{StaticResource ColorTextSecondary}" />
+    <SolidColorBrush x:Key="BrushTextDisabled" Color="{StaticResource ColorTextDisabled}" />
+    <SolidColorBrush x:Key="BrushTextInverted" Color="{StaticResource ColorTextInverted}" />
+
+    <!-- Corner Radius Definitions -->
+    <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="CardCornerRadius">6</CornerRadius>
+
+    <!-- Fonts -->
+    <FontFamily x:Key="MainFontFamily">Segoe UI, Inter, Arial, sans-serif</FontFamily>
+
+</ResourceDictionary>

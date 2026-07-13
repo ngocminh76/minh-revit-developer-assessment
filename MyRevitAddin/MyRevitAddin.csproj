@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Hỗ trợ net48 cho Revit 2024, net8.0-windows cho Revit 2026 -->
+    <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- Tránh copy ra output các thư viện không cần thiết -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <!-- Tên DLL -->
+    <AssemblyName>MyRevitAddin</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Thiết lập cho Revit 2024 (.NET 4.8) -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net48'">
+    <RevitVersion>2024</RevitVersion>
+    <DefineConstants>REVIT2024</DefineConstants>
+    <RevitDllFolder>D:\03.MINH\REVIT\RevitTest\Dll\RV2024</RevitDllFolder>
+  </PropertyGroup>
+
+  <!-- Thiết lập cho Revit 2026 (.NET 8.0-windows) -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <RevitVersion>2026</RevitVersion>
+    <DefineConstants>REVIT2026</DefineConstants>
+    <RevitDllFolder>D:\03.MINH\REVIT\RevitTest\Dll\RV2026</RevitDllFolder>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AecDevHub\AecDevHub\src\WPFUI\WPFUI.csproj" />
+  </ItemGroup>
+
+  <!-- Tham chiếu đến Revit API trong thư mục local -->
+  <ItemGroup>
+    <Reference Include="RevitAPI">
+      <HintPath>$(RevitDllFolder)\RevitAPI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>$(RevitDllFolder)\RevitAPIUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
