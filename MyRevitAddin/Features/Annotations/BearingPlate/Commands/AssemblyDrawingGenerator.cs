@@ -326,6 +326,25 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
                 if (schedule != null)
                 {
                     schedule.ViewTemplateId = template.Id;
+                    
+                    // COPY COLUMN WIDTHS TO PREVENT TEXT WRAPPING AND MISMATCHED HEIGHT (Max BoundingBox)
+                    try
+                    {
+                        Autodesk.Revit.DB.TableData templateTD = template.GetTableData();
+                        Autodesk.Revit.DB.TableData targetTD = schedule.GetTableData();
+                        Autodesk.Revit.DB.TableSectionData templateBody = templateTD.GetSectionData(Autodesk.Revit.DB.SectionType.Body);
+                        Autodesk.Revit.DB.TableSectionData targetBody = targetTD.GetSectionData(Autodesk.Revit.DB.SectionType.Body);
+                        if (templateBody != null && targetBody != null)
+                        {
+                            int cols = Math.Min(templateBody.NumberOfColumns, targetBody.NumberOfColumns);
+                            for (int i = 0; i < cols; i++)
+                            {
+                                targetBody.SetColumnWidth(i, templateBody.GetColumnWidth(i));
+                            }
+                        }
+                    }
+                    catch { }
+
                     try 
                     { 
                         string newName = template.Name;
