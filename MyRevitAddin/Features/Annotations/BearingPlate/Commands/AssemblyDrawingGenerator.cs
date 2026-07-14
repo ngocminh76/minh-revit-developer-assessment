@@ -90,6 +90,44 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
                         // Create Sheet
                         ViewSheet sheet = CreateSheet(assembly, asmName, selectedTitleblockId);
 
+                        // Set TitleBlock Parameters
+                        if (sheet != null)
+                        {
+                            _doc.Regenerate();
+                            FamilyInstance titleBlockInst = new FilteredElementCollector(_doc, sheet.Id)
+                                .OfCategory(BuiltInCategory.OST_TitleBlocks)
+                                .OfClass(typeof(FamilyInstance))
+                                .Cast<FamilyInstance>()
+                                .FirstOrDefault();
+
+                            if (titleBlockInst != null)
+                            {
+                                try 
+                                { 
+                                    Parameter compCountParam = titleBlockInst.LookupParameter("Component Type Count");
+                                    if (compCountParam != null && !compCountParam.IsReadOnly)
+                                    {
+                                        if (compCountParam.StorageType == StorageType.String) compCountParam.Set("1");
+                                        else if (compCountParam.StorageType == StorageType.Integer) compCountParam.Set(1);
+                                        else if (compCountParam.StorageType == StorageType.Double) compCountParam.Set(1.0);
+                                    }
+                                } 
+                                catch { }
+
+                                try 
+                                { 
+                                    Parameter countParam = titleBlockInst.LookupParameter("Count");
+                                    if (countParam != null && !countParam.IsReadOnly)
+                                    {
+                                        if (countParam.StorageType == StorageType.String) countParam.Set("0");
+                                        else if (countParam.StorageType == StorageType.Integer) countParam.Set(0);
+                                        else if (countParam.StorageType == StorageType.Double) countParam.Set(0.0);
+                                    }
+                                } 
+                                catch { }
+                            }
+                        }
+
                         // Create Views
                         var (view3d, planView, frontView) = CreateAssemblyViews(assembly);
 
@@ -103,7 +141,7 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
                             Viewport vpPlan = planView != null ? Viewport.Create(_doc, sheet.Id, planView.Id, new XYZ(0,0,0)) : null;
                             Viewport vp3d = view3d != null ? Viewport.Create(_doc, sheet.Id, view3d.Id, new XYZ(0,0,0)) : null;
 
-                            LayoutViewsOnSheet(sheet, vpFront, vpPlan, vp3d, schedules);
+                            LayoutViewsOnSheet(sheet, vpFront, vpPlan, vp3d, schedules, useA4);
                         }
 
                         t2.Commit();
@@ -252,13 +290,53 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
         private List<ViewSchedule> CreateAssemblySchedules(AssemblyInstance assembly)
         {
             List<ViewSchedule> schedules = new List<ViewSchedule>();
+            string logPath = @"D:\03.MINH\REVIT\RevitTest\schedule_log.txt";
+            System.IO.File.AppendAllText(logPath, $"\n--- Creating schedules for Assembly: {assembly.Name} ---\n");
+
             foreach (var template in _scheduleTemplates)
             {
-                ViewSchedule schedule = AssemblyViewUtils.CreateSingleCategorySchedule(_doc, assembly.Id, new ElementId((long)BuiltInCategory.OST_GenericModel));
+                // Lấy đúng Category của Template để tạo Schedule (tránh mất cột/field do sai Category)
+                ElementId catId = template.Definition.CategoryId;
+                bool isMaterialTakeoff = false;
+                try { isMaterialTakeoff = template.Definition.IsMaterialTakeoff; } catch { }
+
+                System.IO.File.AppendAllText(logPath, $"Template: {template.Name}, CatId: {catId}, IsMaterialTakeoff: {isMaterialTakeoff}\n");
+
+                if (catId == ElementId.InvalidElementId) 
+                    catId = new ElementId((long)BuiltInCategory.OST_GenericModel);
+
+                ViewSchedule schedule = null;
+                try
+                {
+                    if (isMaterialTakeoff)
+                    {
+                        // Hàm CreateMaterialTakeoff trong Revit API yêu cầu tham số 3 là viewTemplateId chứ không phải categoryId
+                        schedule = AssemblyViewUtils.CreateMaterialTakeoff(_doc, assembly.Id, template.Id, true);
+                    }
+                    else
+                    {
+                        schedule = AssemblyViewUtils.CreateSingleCategorySchedule(_doc, assembly.Id, catId);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    System.IO.File.AppendAllText(logPath, $"  FAILED to create exact schedule: {ex.Message}\n");
+                }
+
                 if (schedule != null)
                 {
                     schedule.ViewTemplateId = template.Id;
-                    try { schedule.Name = template.Name.Replace("Template", "Assembly"); } catch { }
+                    try 
+                    { 
+                        string newName = template.Name;
+                        if (newName.Contains("Template"))
+                            newName = newName.Replace("Template", "Assembly");
+                        else if (!newName.EndsWith("- Assembly"))
+                            newName += " - Assembly";
+                            
+                        schedule.Name = newName; 
+                    } 
+                    catch { }
                     schedules.Add(schedule);
                 }
             }
@@ -269,23 +347,68 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
         // DYNAMIC LAYOUT SYSTEM
         // ==========================================
 
-        private void LayoutViewsOnSheet(ViewSheet sheet, Viewport vpFront, Viewport vpPlan, Viewport vp3d, List<ViewSchedule> schedules)
+        private void LayoutViewsOnSheet(ViewSheet sheet, Viewport vpFront, Viewport vpPlan, Viewport vp3d, List<ViewSchedule> schedules, bool isA4)
         {
-            _doc.Regenerate();
+            // 3. Layout Schedules
+            double mmToFeet = 1.0 / 304.8;
+            
+            // Lấy BoundingBox thực tế của Khung tên
             BoundingBoxXYZ tbBox = GetTitleBlockBoundingBox(sheet);
+            if (tbBox == null) return;
 
-            // 1. Schedules
-            GetDrawingArea(tbBox, out double drawMinX, out double drawMaxX, out double drawMinY, out double drawMaxY);
-            XYZ currentSchedulePt = new XYZ(drawMinX, drawMaxY, 0); 
+            // Đọc tọa độ Min thực tế của Khung tên (A4 là 0, A3 là -0.69 feet)
+            double paperMinX = tbBox.Min.X;
+            double paperMinY = tbBox.Min.Y;
+
+            // Danh sách tọa độ chính xác tuyệt đối (Sheet Space) theo ảnh của user (đơn vị feet)
+            // Tọa độ này đúng cho CẢ A3 và A4 vì Khung tên A3 và A4 có chung một hệ quy chiếu gốc (từ bên phải)
+            var schedulePositions = new System.Collections.Generic.Dictionary<string, XYZ>
+            {
+                { "Base Component", new XYZ(0.01, 0.23, 0) },
+                { "Weight", new XYZ(0.21, 0.24, 0) },
+                { "Corrosion Category", new XYZ(0.13, 0.18, 0) },
+                { "Surface Treatment", new XYZ(0.13, 0.16, 0) },
+                { "Description", new XYZ(0.36, 0.01, 0) },
+                { "Additional Components", new XYZ(0.01, 0.22, 0) }
+            };
+
+            double currentOtherY = paperMinY + 150.0 * mmToFeet;
+
             foreach (var schedule in schedules)
             {
-                var ssi = ScheduleSheetInstance.Create(_doc, sheet.Id, schedule.Id, currentSchedulePt);
-                _doc.Regenerate(); 
+                // Place schedule temporarily at origin
+                var ssi = ScheduleSheetInstance.Create(_doc, sheet.Id, schedule.Id, new XYZ(0, 0, 0));
+                _doc.Regenerate();
+                
                 BoundingBoxXYZ bbox = ssi.get_BoundingBox(sheet);
                 if (bbox != null)
                 {
-                    double height = bbox.Max.Y - bbox.Min.Y;
-                    currentSchedulePt = new XYZ(currentSchedulePt.X, currentSchedulePt.Y - height - 0.01, 0);
+                    XYZ currentMin = bbox.Min;
+                    XYZ targetMin = null;
+
+                    // Khớp tên Schedule để lấy tọa độ tuyệt đối tương ứng
+                    foreach (var kvp in schedulePositions)
+                    {
+                        if (schedule.Name.Contains(kvp.Key))
+                        {
+                            targetMin = kvp.Value; // Dùng TỌA ĐỘ TUYỆT ĐỐI
+                            break;
+                        }
+                    }
+
+                    if (targetMin != null)
+                    {
+                        ElementTransformUtils.MoveElement(_doc, ssi.Id, targetMin - currentMin);
+                    }
+                    else
+                    {
+                        // Tạm thời xếp các bảng khác lên cao để chờ user cung cấp thêm tọa độ
+                        targetMin = new XYZ(0.01, currentOtherY, 0);
+                        ElementTransformUtils.MoveElement(_doc, ssi.Id, targetMin - currentMin);
+                        
+                        double height = bbox.Max.Y - bbox.Min.Y;
+                        currentOtherY += height + (5.0 * mmToFeet); 
+                    }
                 }
             }
 
