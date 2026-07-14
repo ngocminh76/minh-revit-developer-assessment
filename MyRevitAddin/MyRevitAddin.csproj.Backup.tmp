@@ -27,7 +27,7 @@
     <RevitDllFolder>D:\03.MINH\REVIT\RevitTest\Dll\RV2026</RevitDllFolder>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Shared_Core\Shared_Core.csproj" />
+    <ProjectReference Include="..\..\..\AecDevHub\AecDevHub\src\WPFUI\WPFUI.csproj" />
   </ItemGroup>
 
   <!-- Tham chiếu đến Revit API trong thư mục local -->
@@ -41,9 +41,16 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
+
+  <!-- Tham chiếu WPF UI -->
   <ItemGroup>
-    <Folder Include="Commands\" />
-    <Folder Include="Core\" />
+    <ProjectReference Include="..\WPFUI\WPFUI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Features\Annotations\BearingPlate\Commands\" />
+    <Folder Include="Features\Annotations\BearingPlate\Models\" />
+    <Folder Include="Features\Annotations\BearingPlate\ViewModels\" />
+    <Folder Include="Features\Annotations\BearingPlate\Views\" />
     <Folder Include="Features\Architecture\" />
     <Folder Include="Features\Structural\" />
   </ItemGroup>

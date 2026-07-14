@@ -1,0 +1,90 @@
+<Window x:Class="MyRevitAddin.Features.Annotations.BearingPlate.Views.BearingPlateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MyRevitAddin.Features.Annotations.BearingPlate.Views"
+        mc:Ignorable="d"
+        Title="Generate Bearing Plate Drawings" Height="600" Width="600"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid>
+        <Grid Margin="10">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" Margin="0,0,0,10" Grid.Row="0"/>
+
+            <!-- Filter placeholder -->
+            <TextBox Grid.Row="1" Height="25" Margin="0,0,0,10" IsEnabled="False" Text="Search (not implemented yet)"/>
+
+            <!-- DataGrid -->
+            <DataGrid Grid.Row="2" ItemsSource="{Binding BearingPlates}" AutoGenerateColumns="False" 
+                      CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single"
+                      HeadersVisibility="Column" GridLinesVisibility="All" AlternatingRowBackground="#FFF0F0F0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Family" Binding="{Binding Family}" IsReadOnly="True" Width="*"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" IsReadOnly="True" Width="*"/>
+                    
+                    <DataGridTemplateColumn Header="Has Assembly" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding HasAssembly, Mode=OneWay}" IsEnabled="False" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Select" Width="60">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            <!-- Bottom Area placeholder to match screenshot -->
+            <Border Grid.Row="3" Height="100" Background="#FFF5F5F5" Margin="0,10,0,10" BorderBrush="#FFDDDDDD" BorderThickness="1"/>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Generate" Width="80" Height="30" Margin="0,0,10,0" Command="{Binding GenerateCommand}"/>
+                <Button Content="Cancel" Width="80" Height="30" Command="{Binding CancelCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Progress Overlay -->
+        <Border Background="#88FFFFFF">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
+                <TextBlock Text="{Binding ProgressText}" Margin="0,0,0,10" FontWeight="SemiBold" TextAlignment="Center"/>
+                <ProgressBar Minimum="0" Maximum="{Binding ProgressMax}" Value="{Binding ProgressValue}" Height="20"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

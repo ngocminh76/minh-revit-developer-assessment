@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework Condition="'$(Configuration)' == 'AutoCAD_2025'">net8.0-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'ZWCAD'">
+    <DefineConstants>ZWCAD</DefineConstants>
+    <OutputPath>bin\ZWCAD\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'ZWCAD'">
+    <Reference Include="ZwManaged"><HintPath>..\..\..\Libs\ZWCAD\ZwManaged.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="ZwDatabaseMgd"><HintPath>..\..\..\Libs\ZWCAD\ZwDatabaseMgd.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="ZdWindows"><HintPath>..\..\..\Libs\ZWCAD\ZdWindows.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'AutoCAD_2024' Or '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release'">
+    <DefineConstants>AUTOCAD</DefineConstants>
+    <OutputPath>bin\AutoCAD_2024\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'AutoCAD_2024' Or '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release'">
+    <Reference Include="acmgd"><HintPath>..\..\..\Libs\AUTOCAD\2024\acmgd.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="acdbmgd"><HintPath>..\..\..\Libs\AUTOCAD\2024\acdbmgd.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="accoremgd"><HintPath>..\..\..\Libs\AUTOCAD\2024\accoremgd.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="AcWindows"><HintPath>..\..\..\Libs\AUTOCAD\2024\AcWindows.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="AdWindows"><HintPath>..\..\..\Libs\AUTOCAD\2024\AdWindows.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'AutoCAD_2025'">
+    <DefineConstants>AUTOCAD</DefineConstants>
+    <OutputPath>bin\AutoCAD_2025\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'AutoCAD_2025'">
+    <Reference Include="acmgd"><HintPath>..\..\..\Libs\AUTOCAD\2025\acmgd.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="acdbmgd"><HintPath>..\..\..\Libs\AUTOCAD\2025\acdbmgd.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="accoremgd"><HintPath>..\..\..\Libs\AUTOCAD\2025\accoremgd.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="AcWindows"><HintPath>..\..\..\Libs\AUTOCAD\2025\AcWindows.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="AdWindows"><HintPath>..\..\..\Libs\AUTOCAD\2025\AdWindows.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+</Project>

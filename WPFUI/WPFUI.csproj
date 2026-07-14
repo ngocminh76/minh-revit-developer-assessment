@@ -1,10 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework Condition="'$(Configuration)' == 'AutoCAD_2025'">net8.0-windows</TargetFramework>
-    <TargetFramework Condition="'$(TargetFramework)' == ''">net48</TargetFramework>
+    <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared_Core\Shared_Core.csproj" />
+  </ItemGroup>
+
 </Project>
