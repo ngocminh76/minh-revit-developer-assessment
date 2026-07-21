@@ -184,10 +184,11 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 faceDist = (endpoint - colOrigin).DotProduct(colNormal);
             }
 
-            // 4. Cần dời endpoint bao nhiêu để faceDist = clearance?
-            //    moveAmount > 0: dời ra xa cột (dầm ngắn lại)
-            //    moveAmount < 0: dời vào gần cột (dầm dài thêm)
-            double moveAmount = clearance - faceDist;
+            // 4. Cần dời endpoint bao nhiêu để faceDist = -clearance?
+            //    (âm vì mặt dầm phải THỤT VÀO phía tâm cột, không lòi ra ngoài)
+            //    moveAmount > 0: dời ra xa cột (theo faceNormal)
+            //    moveAmount < 0: dời vào gần cột (ngược faceNormal)
+            double moveAmount = -clearance - faceDist;
             XYZ result = endpoint + colNormal * moveAmount;
 
             // === DEBUG LOG ===

@@ -1,0 +1,146 @@
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-02 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+  FAILED to create exact schedule: viewTemplateId is not a correct view template for the schedule view.
+Parameter name: viewTemplateId
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-02 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-02 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-02 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-02 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-02 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-01 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True
+
+--- Creating schedules for Assembly: PL-02 ---
+Template: REVGEN_CRH_Schedule_BearingPlate Additional Components, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Base Component, CatId: -2008083, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Corrosion Category, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Description, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Surface Treatment, CatId: -2000151, IsMaterialTakeoff: False
+Template: REVGEN_CRH_Schedule_BearingPlate Weight, CatId: -1, IsMaterialTakeoff: True

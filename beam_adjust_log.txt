@@ -1,0 +1,151 @@
+
+--- TH2: Dầm đơn tại Cột [1721201] ---
+  Column Center:     (57.769488, 47.989357, 0.000000) feet
+  Column on Line:    (57.769488, 47.989357, -1.377953) feet
+  BBox Min:          (56.884332, 47.019093, -11.581365)
+  BBox Max:          (58.654644, 48.959621, -3.904199)
+  hx=0.885156 ft (269.8 mm)  |  hy=0.970264 ft (295.7 mm)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  dir2D:             (-0.889426, -0.457079, 0.000000)
+  halfWidth:         0.995199 ft (303.3 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  Beam endpoint (before): (57.244236, 47.719428, -1.377953)
+  Beam endpoint (after):  (58.683825, 48.459237, -1.377953)
+  Distance moved:    1.618559 ft (493.3 mm)
+
+--- TH2: Dầm đơn tại Cột [1721201] ---
+  Column Center:     (57.769488, 47.989357, 0.000000) feet
+  Column on Line:    (57.769488, 47.989357, -1.377953) feet
+  BBox Min:          (56.884332, 47.019093, -11.581365)
+  BBox Max:          (58.654644, 48.959621, -3.904199)
+  hx=0.885156 ft (269.8 mm)  |  hy=0.970264 ft (295.7 mm)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  dir2D:             (-0.889426, -0.457079, 0.000000)
+  halfWidth:         0.995199 ft (303.3 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  Beam endpoint (before): (57.244236, 47.719428, -1.377953)
+  Beam endpoint (after):  (58.683825, 48.459237, -1.377953)
+  Distance moved:    1.618559 ft (493.3 mm)
+
+--- TH2: Dầm đơn tại Cột [1721201] ---
+  Face Normal:       (0.889426, 0.457079, 0.000000)
+  Face Origin:       (58.639648, 47.588130, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  currentGap:        -1.181102 ft (-360.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveDistance:       -1.213911 ft (-370.0 mm)
+  Endpoint (before): (57.244236, 47.719428, -1.377953)
+  Endpoint (after):  (58.323920, 48.274281, -1.377953)
+
+--- TH2: Dầm đơn tại Cột [1721201] ---
+  Face Normal:       (0.889426, 0.457079, 0.000000)
+  Face Origin:       (58.639648, 47.588130, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  currentGap:        -1.181102 ft (-360.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveDistance:       -1.213911 ft (-370.0 mm)
+  Endpoint (before): (57.244236, 47.719428, -1.377953)
+  Endpoint (after):  (58.323920, 48.274281, -1.377953)
+
+--- NEW LOGIC: Dầm tại Cột/Tường [1721201] ---
+  Face Normal:       (-0.889426, -0.457079, -0.000000)
+  Face Origin:       (56.899328, 48.390583, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  distToPlane:       -0.032808 ft (-10.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveDist:          0.032808 ft (10.0 mm)
+  Endpoint (before): (57.273417, 47.734424, -1.377953)
+  Endpoint (after):  (57.273417, 47.734424, -1.377953)
+
+--- NEW LOGIC: Dầm tại Cột/Tường [1721201] ---
+  Face Normal:       (-0.889426, -0.457079, -0.000000)
+  Face Origin:       (56.899328, 48.390583, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  distToPlane:       -0.032808 ft (-10.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveDist:          0.032808 ft (10.0 mm)
+  Endpoint (before): (57.273417, 47.734424, -1.377953)
+  Endpoint (after):  (57.273417, 47.734424, -1.377953)
+
+--- NEW LOGIC: Dầm tại Cột/Tường [1721201] ---
+  Face Normal:       (-0.889426, -0.457079, -0.000000)
+  Face Origin:       (56.899328, 48.390583, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  distToPlane:       -0.032808 ft (-10.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveDist:          0.032808 ft (10.0 mm)
+  Endpoint (before): (57.273417, 47.734424, -1.377953)
+  Endpoint (after):  (57.273417, 47.734424, -1.377953)
+
+--- NEW LOGIC: Dầm tại Cột/Tường [1721201] ---
+  Face Normal:       (-0.889426, -0.457079, -0.000000)
+  Face Origin:       (56.899328, 48.390583, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  distToPlane:       0.000000 ft (0.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveDist:          0.032808 ft (10.0 mm)
+  Endpoint (before): (57.244236, 47.719428, -1.377953)
+  Endpoint (after):  (57.273417, 47.734424, -1.377953)
+
+--- NEW LOGIC: Dầm tại Cột/Tường [1721201] ---
+  Face Normal:       (-0.889426, -0.457079, -0.000000)
+  Face Origin:       (56.899328, 48.390583, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  distToPlane:       -0.032808 ft (-10.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  Projected on face: (57.244236, 47.719428, -1.377953)
+  Endpoint (before): (57.273417, 47.734424, -1.377953)
+  Endpoint (after):  (57.215056, 47.704432, -1.377953)
+
+--- TH2 FIX: Dầm tại Cột/Tường [1721201] ---
+  Face Normal:       (-0.889426, -0.457079, -0.000000)
+  Face Origin:       (56.899328, 48.390583, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  distToPlane:       0.000000 ft (0.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  Projected on face: (57.244236, 47.719428, -1.377953)
+  Endpoint (before): (57.244236, 47.719428, -1.377953)
+  Endpoint (after):  (57.215056, 47.704432, -1.377953)
+
+--- TH2 FIX: Dầm tại Cột/Tường [1721201] ---
+  Face Normal:       (-0.889426, -0.457079, -0.000000)
+  Face Origin:       (56.899328, 48.390583, -3.904199)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  distToPlane:       0.000000 ft (0.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  Projected on face: (57.244236, 47.719428, -1.377953)
+  Endpoint (before): (57.244236, 47.719428, -1.377953)
+  Endpoint (after):  (57.215056, 47.704432, -1.377953)
+
+--- FACE-TO-FACE: Dầm tại Cột/Tường [1721201] ---
+  Col Face Normal:   (-0.889426, -0.457079, -0.000000)
+  Col Face Origin:   (56.899328, 48.390583, -3.904199)
+  Beam Face Origin:  (57.750165, 47.979427, -1.377953)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  faceDist:          -0.568826 ft (-173.4 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveAmount:        0.601635 ft (183.4 mm)
+  Endpoint (before): (57.244236, 47.719428, -1.377953)
+  Endpoint (after):  (56.709126, 47.444434, -1.377953)
+
+--- FACE-TO-FACE: Dầm tại Cột/Tường [1721201] ---
+  Col Face Normal:   (-0.889426, -0.457079, -0.000000)
+  Col Face Origin:   (56.899328, 48.390583, -3.904199)
+  Beam Face Origin:  (57.594404, 47.899380, -1.377953)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  faceDist:          -0.393701 ft (-120.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveAmount:        0.360892 ft (110.0 mm)
+  Endpoint (before): (56.709126, 47.444434, -1.377953)
+  Endpoint (after):  (56.388139, 47.279477, -1.377953)
+
+--- FACE-TO-FACE: Dầm tại Cột/Tường [1721201] ---
+  Col Face Normal:   (-0.889426, -0.457079, -0.000000)
+  Col Face Origin:   (56.899328, 48.390583, -3.904199)
+  Beam Face Origin:  (56.265515, 47.216461, -1.377953)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  faceDist:          1.100396 ft (335.4 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveAmount:        -1.133204 ft (-345.4 mm)
+  Endpoint (before): (56.388139, 47.279477, -1.377953)
+  Endpoint (after):  (57.396041, 47.797441, -1.377953)
