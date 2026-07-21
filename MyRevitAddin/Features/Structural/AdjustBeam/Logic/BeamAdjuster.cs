@@ -174,7 +174,26 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             double moveDist = clearance / dot;
 
             // 4. Dời điểm đã chiếu vào trong thân dầm
-            return projectedPt + inwardDir * moveDist;
+            XYZ result = projectedPt + inwardDir * moveDist;
+
+            // === DEBUG LOG ===
+            string logPath = @"D:\03.MINH\REVIT\RevitTest\beam_adjust_log.txt";
+            try
+            {
+                string log = $"\n--- NEW LOGIC: Dầm tại Cột/Tường [{element.Id}] ---\n"
+                    + $"  Face Normal:       ({faceNormal.X:F6}, {faceNormal.Y:F6}, {faceNormal.Z:F6})\n"
+                    + $"  Face Origin:       ({faceOrigin.X:F6}, {faceOrigin.Y:F6}, {faceOrigin.Z:F6})\n"
+                    + $"  outwardDir:        ({outwardDir.X:F6}, {outwardDir.Y:F6}, {outwardDir.Z:F6})\n"
+                    + $"  distToPlane:       {distToPlane:F6} ft ({distToPlane / MmToFeet:F1} mm)\n"
+                    + $"  clearance:         {clearance:F6} ft ({clearance / MmToFeet:F1} mm)\n"
+                    + $"  moveDist:          {moveDist:F6} ft ({moveDist / MmToFeet:F1} mm)\n"
+                    + $"  Endpoint (before): ({endpoint.X:F6}, {endpoint.Y:F6}, {endpoint.Z:F6})\n"
+                    + $"  Endpoint (after):  ({result.X:F6}, {result.Y:F6}, {result.Z:F6})\n";
+                System.IO.File.AppendAllText(logPath, log);
+            }
+            catch { }
+
+            return result;
         }
 
         private PlanarFace FindClosestFace(Element element, XYZ endpoint)
