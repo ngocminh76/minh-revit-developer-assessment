@@ -149,3 +149,108 @@
   moveAmount:        -1.133204 ft (-345.4 mm)
   Endpoint (before): (56.388139, 47.279477, -1.377953)
   Endpoint (after):  (57.396041, 47.797441, -1.377953)
+
+--- FACE-TO-FACE: Dầm tại Cột/Tường [1721201] ---
+  Col Face Normal:   (-0.889426, -0.457079, -0.000000)
+  Col Face Origin:   (56.899328, 48.390583, -3.904199)
+  Beam Face Origin:  (57.244236, 47.719428, -1.377953)
+  outwardDir:        (-0.889426, -0.457079, 0.000000)
+  faceDist:          0.000000 ft (0.0 mm)
+  clearance:         0.065617 ft (20.0 mm)
+  moveAmount:        -0.065617 ft (-20.0 mm)
+  Endpoint (before): (57.244236, 47.719428, -1.377953)
+  Endpoint (after):  (57.302598, 47.749420, -1.377953)
+
+--- FACE-TO-FACE: Dầm tại Cột/Tường [1721214] ---
+  Col Face Normal:   (0.889426, 0.457079, 0.000000)
+  Col Face Origin:   (67.084359, 51.927893, -3.904199)
+  Beam Face Origin:  (66.214198, 52.329119, -1.377953)
+  outwardDir:        (0.889426, 0.457079, -0.000000)
+  faceDist:          -0.590551 ft (-180.0 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveAmount:        0.557743 ft (170.0 mm)
+  Endpoint (before): (66.214198, 52.329119, -1.377953)
+  Endpoint (after):  (66.710270, 52.584051, -1.377953)
+
+--- FACE-TO-FACE: Dầm tại Cột/Tường [1721214] ---
+  Col Face Normal:   (-0.889426, -0.457079, -0.000000)
+  Col Face Origin:   (65.344038, 52.730346, -3.904199)
+  Beam Face Origin:  (66.166506, 52.301300, -1.377953)
+  outwardDir:        (-0.860947, -0.508695, 0.000000)
+  faceDist:          -0.535417 ft (-163.2 mm)
+  clearance:         0.032808 ft (10.0 mm)
+  moveAmount:        0.502608 ft (153.2 mm)
+  Endpoint (before): (66.166506, 52.301300, -1.377953)
+  Endpoint (after):  (65.719473, 52.071568, -1.377953)
+
+--- TH3 TOP-EDGE: Inline tại Cột [1721214] ---
+  Edge Dir:          (0.457079, -0.889426)
+  Edge Midpoint:     (65.718127, 52.074187)
+  Inward Normal:     (0.889426, 0.457079)
+  outwardDir:        (0.889426, 0.457079)
+  halfGap:           0.032808 ft (10.0 mm)
+  Endpoint (before): (66.214198, 52.329119, -1.377953)
+  Endpoint (after):  (65.747308, 52.089183, -1.377953)
+
+--- TH3 TOP-EDGE: Inline tại Cột [1721214] ---
+  Edge Dir:          (-0.457079, 0.889426)
+  Edge Midpoint:     (66.710270, 52.584051)
+  Inward Normal:     (-0.889426, -0.457079)
+  outwardDir:        (-0.860947, -0.508695)
+  halfGap:           0.032808 ft (10.0 mm)
+  Endpoint (before): (66.166506, 52.301300, -1.377953)
+  Endpoint (after):  (66.666784, 52.596891, -1.377953)
+
+--- TH3 TOP-EDGE: Inline tại Cột [5799335] ---
+  Edge Dir:          (0.457079, -0.889426)
+  Edge Midpoint:     (71.781785, 76.953738)
+  Inward Normal:     (0.889426, 0.457079)
+  outwardDir:        (0.889426, 0.457079)
+  halfGap:           0.032808 ft (10.0 mm)
+  Endpoint (before): (72.277856, 77.208670, -1.377953)
+  Endpoint (after):  (71.810965, 76.968734, -1.377953)
+
+--- TH3 TOP-EDGE: Inline tại Cột [5799335] ---
+  Edge Dir:          (-0.457079, 0.889426)
+  Edge Midpoint:     (72.773927, 77.463603)
+  Inward Normal:     (-0.889426, -0.457079)
+  outwardDir:        (-0.889426, -0.457079)
+  halfGap:           0.032808 ft (10.0 mm)
+  Endpoint (before): (72.277856, 77.208670, -1.377953)
+  Endpoint (after):  (72.744746, 77.448607, -1.377953)
+
+--- TH3 TOP-EDGE: Inline tại Cột [5799335] ---
+  Edge Dir:          (0.457079, -0.889426)
+  Edge Midpoint:     (71.781785, 76.953738)
+  Inward Normal:     (0.889426, 0.457079)
+  outwardDir:        (0.889426, 0.457079)
+  halfGap:           0.032808 ft (10.0 mm)
+  Endpoint (before): (72.277856, 77.208670, -1.377953)
+  Endpoint (after):  (72.248675, 77.193674, -1.377953)
+
+--- TH3 TOP-EDGE: Inline tại Cột [5799335] ---
+  Edge Dir:          (-0.457079, 0.889426)
+  Edge Midpoint:     (72.773927, 77.463603)
+  Inward Normal:     (-0.889426, -0.457079)
+  outwardDir:        (-0.889426, -0.457079)
+  halfGap:           0.032808 ft (10.0 mm)
+  Endpoint (before): (72.277856, 77.208670, -1.377953)
+  Endpoint (after):  (72.307036, 77.223666, -1.377953)
+
+--- TH3 TOP-EDGE: Inline tại Cột [1721214] ---
+  Edge Dir:          (0.457079, -0.889426)
+  Edge Midpoint:     (65.718127, 52.074187)
+  Inward Normal:     (0.889426, 0.457079)
+  outwardDir:        (0.889426, 0.457079)
+  halfGap:           0.032808 ft (10.0 mm)
+  Endpoint (before): (66.214198, 52.329119, -1.377953)
+  Endpoint (after):  (66.185018, 52.314123, -1.377953)
+
+--- TH3 TOP-EDGE: Inline tại Cột [1721214] ---
+  Edge Dir:          (-0.457079, 0.889426)
+  Edge Midpoint:     (66.710270, 52.584051)
+  Inward Normal:     (-0.889426, -0.457079)
+  outwardDir:        (-0.860947, -0.508695)
+  halfGap:           0.032808 ft (10.0 mm)
+  Endpoint (before): (66.166506, 52.301300, -1.377953)
+  Endpoint (after):  (66.242303, 52.346084, -1.377953)
