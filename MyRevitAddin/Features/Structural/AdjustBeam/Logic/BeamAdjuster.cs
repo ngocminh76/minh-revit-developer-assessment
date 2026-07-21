@@ -15,6 +15,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
         private List<FamilyInstance> _beams;
         private List<FamilyInstance> _columns;
         private List<Wall> _walls;
+        private BeamEndCutter _cutter = new BeamEndCutter();
 
         public void AdjustBeams(Document doc, ICollection<ElementId> selectedIds, Models.AdjustBeamConfig config)
         {
@@ -79,22 +80,43 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             XYZ end = line.GetEndPoint(1);
             XYZ beamDir = line.Direction;
 
-            XYZ newStart = ComputeNewEndpoint(beam, start, beamDir.Negate(), beamDir,
-                wallCl, pillarCl, halfGap, perpGap);
-            XYZ newEnd = ComputeNewEndpoint(beam, end, beamDir, beamDir,
-                wallCl, pillarCl, halfGap, perpGap);
+            // Tính endpoint mới + ghi nhận nếu là TH3
+            FamilyInstance startCol = null, endCol = null;
+            bool startIsInline = false, endIsInline = false;
 
+            XYZ newStart = ComputeNewEndpointEx(beam, start, beamDir.Negate(), beamDir,
+                wallCl, pillarCl, halfGap, perpGap, out startCol, out startIsInline);
+            XYZ newEnd = ComputeNewEndpointEx(beam, end, beamDir, beamDir,
+                wallCl, pillarCl, halfGap, perpGap, out endCol, out endIsInline);
+
+            // Dời endpoint
             if (newStart.DistanceTo(newEnd) > 0.01)
                 locCurve.Curve = Line.CreateBound(newStart, newEnd);
+
+            // Áp dụng Opening Cut cho TH3 (parallel faces)
+            if (startIsInline && startCol != null)
+            {
+                XYZ edgeNormal = _cutter.GetCrossingEdgeNormal(startCol, beamDir.Negate());
+                if (edgeNormal != null)
+                    _cutter.CutBeamEnd(_doc, beam, newStart, beamDir.Negate(), edgeNormal);
+            }
+            if (endIsInline && endCol != null)
+            {
+                XYZ edgeNormal = _cutter.GetCrossingEdgeNormal(endCol, beamDir);
+                if (edgeNormal != null)
+                    _cutter.CutBeamEnd(_doc, beam, newEnd, beamDir, edgeNormal);
+            }
         }
 
         /// <summary>
-        /// Tính vị trí mới cho 1 đầu dầm.
-        /// outwardDir: hướng từ thân dầm ra đầu mút.
+        /// Tính vị trí mới cho 1 đầu dầm + xác định có phải TH3 không.
         /// </summary>
-        private XYZ ComputeNewEndpoint(FamilyInstance beam, XYZ endpoint, XYZ outwardDir, XYZ beamDir,
-            double wallCl, double pillarCl, double halfGap, double perpGap)
+        private XYZ ComputeNewEndpointEx(FamilyInstance beam, XYZ endpoint, XYZ outwardDir, XYZ beamDir,
+            double wallCl, double pillarCl, double halfGap, double perpGap,
+            out FamilyInstance nearbyColumn, out bool isInline)
         {
+            nearbyColumn = null;
+            isInline = false;
             XYZ inwardDir = outwardDir.Negate();
 
             // ═══════ Ưu tiên 1: CỘT ═══════
@@ -104,7 +126,9 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 FamilyInstance inlineBeam = FindInlineBeamAtColumn(beam, nearCol, outwardDir);
                 if (inlineBeam != null)
                 {
-                    // ▶ TH3: Hai dầm cùng phương → halfGap từ mặt cột (face-to-face)
+                    // ▶ TH3: Hai dầm cùng phương → halfGap + Opening Cut
+                    nearbyColumn = nearCol;
+                    isInline = true;
                     return ComputeInlineEndpoint(beam, endpoint, outwardDir, nearCol, halfGap);
                 }
                 else
@@ -135,154 +159,36 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
 
         #endregion
 
-        #region TH3: Hai dầm cùng phương tại cột (Top Face Edge)
+        #region TH3: Hai dầm cùng phương tại cột (Offset halfGap)
 
         /// <summary>
-        /// Lấy mặt TOP cột → tìm cạnh mà dầm cắt ngang → offset halfGap vào trong
-        /// → giao đường dầm với cạnh offset → endpoint mới.
-        /// Hướng cắt theo CẠNH CỘT, không phụ thuộc hướng dầm.
+        /// Mỗi endpoint dời halfGap về phía thân dầm (inward).
+        /// Không phụ thuộc vị trí tâm cột hay hình dạng cột.
         /// </summary>
         private XYZ ComputeInlineEndpoint(FamilyInstance beam, XYZ endpoint, XYZ outwardDir, FamilyInstance column, double halfGap)
         {
-            XYZ colCenter = ((LocationPoint)column.Location).Point;
-
-            // 1. Lấy mặt top cột
-            PlanarFace topFace = FindTopFace(column);
-            if (topFace == null)
-                return ComputeGapFromFaces(beam, endpoint, outwardDir, column, halfGap);
-
-            // 2. Tìm cạnh top face mà dầm "cắt ngang"
-            //    = cạnh có pháp tuyến hướng vào (inward) trùng với outwardDir
-            Line crossingEdge = null;
-            XYZ edgeInwardNormal = null;
-            double bestDot = -1;
-
-            foreach (CurveLoop loop in topFace.GetEdgesAsCurveLoops())
-            {
-                foreach (Curve curve in loop)
-                {
-                    if (!(curve is Line line)) continue;
-                    if (line.Length < 0.3) continue; // bỏ cạnh vát < ~90mm
-
-                    XYZ edgeDir = line.Direction;
-                    XYZ edgeMid = (line.GetEndPoint(0) + line.GetEndPoint(1)) * 0.5;
-
-                    // Pháp tuyến hướng vào tâm cột
-                    XYZ n1 = new XYZ(-edgeDir.Y, edgeDir.X, 0).Normalize();
-                    XYZ toCenter = new XYZ(colCenter.X - edgeMid.X, colCenter.Y - edgeMid.Y, 0);
-                    XYZ inward = n1.DotProduct(toCenter) > 0 ? n1 : n1.Negate();
-
-                    double dot = outwardDir.DotProduct(inward);
-                    if (dot > bestDot)
-                    {
-                        bestDot = dot;
-                        crossingEdge = line;
-                        edgeInwardNormal = inward;
-                    }
-                }
-            }
-
-            if (crossingEdge == null)
-                return ComputeGapFromFaces(beam, endpoint, outwardDir, column, halfGap);
-
-            // 3. Vị trí cắt: tâm cột + halfGap hướng về phía dầm
-            //    (2 dầm → 2 cut line cách tâm cột mỗi bên halfGap → gap = 2*halfGap)
             XYZ inwardDir = outwardDir.Negate();
-            XYZ cutOrigin = new XYZ(
-                colCenter.X + inwardDir.X * halfGap,
-                colCenter.Y + inwardDir.Y * halfGap,
+            XYZ result = new XYZ(
+                endpoint.X + inwardDir.X * halfGap,
+                endpoint.Y + inwardDir.Y * halfGap,
                 endpoint.Z);
-            XYZ edgeDirection = crossingEdge.Direction;
-
-            // 4. Giao đường dầm với đường cắt (2D line-line intersection)
-            //    Beam:  endpoint + t * inwardDir
-            //    Cut:   cutOrigin + s * edgeDirection
-            double cross2D = inwardDir.X * edgeDirection.Y - inwardDir.Y * edgeDirection.X;
-            if (Math.Abs(cross2D) < 1e-10)
-                return ComputeGapFromFaces(beam, endpoint, outwardDir, column, halfGap);
-
-            double dx = cutOrigin.X - endpoint.X;
-            double dy = cutOrigin.Y - endpoint.Y;
-            double t = (dx * edgeDirection.Y - dy * edgeDirection.X) / cross2D;
-
-            XYZ result = new XYZ(endpoint.X + t * inwardDir.X, endpoint.Y + t * inwardDir.Y, endpoint.Z);
 
             // === DEBUG LOG ===
             string logPath = @"D:\03.MINH\REVIT\RevitTest\beam_adjust_log.txt";
             try
             {
-                XYZ edgeMidLog = (crossingEdge.GetEndPoint(0) + crossingEdge.GetEndPoint(1)) * 0.5;
-                string log = $"\n--- TH3 TOP-EDGE: Inline tại Cột [{column.Id}] ---\n"
-                    + $"  Edge Dir:          ({edgeDirection.X:F6}, {edgeDirection.Y:F6})\n"
-                    + $"  Edge Midpoint:     ({edgeMidLog.X:F6}, {edgeMidLog.Y:F6})\n"
-                    + $"  Inward Normal:     ({edgeInwardNormal.X:F6}, {edgeInwardNormal.Y:F6})\n"
+                XYZ colCenter = ((LocationPoint)column.Location).Point;
+                string log = $"\n--- TH3 INLINE: Dầm [{beam.Id}] tại Cột [{column.Id}] ---\n"
                     + $"  outwardDir:        ({outwardDir.X:F6}, {outwardDir.Y:F6})\n"
                     + $"  halfGap:           {halfGap:F6} ft ({halfGap / MmToFeet:F1} mm)\n"
-                    + $"  Endpoint (before): ({endpoint.X:F6}, {endpoint.Y:F6}, {endpoint.Z:F6})\n"
-                    + $"  Endpoint (after):  ({result.X:F6}, {result.Y:F6}, {result.Z:F6})\n";
+                    + $"  Column center:     ({colCenter.X:F6}, {colCenter.Y:F6})\n"
+                    + $"  Endpoint (before): ({endpoint.X:F6}, {endpoint.Y:F6})\n"
+                    + $"  Endpoint (after):  ({result.X:F6}, {result.Y:F6})\n";
                 System.IO.File.AppendAllText(logPath, log);
             }
             catch { }
 
             return result;
-        }
-
-        /// <summary>
-        /// Tìm mặt TOP (Normal.Z ≈ 1.0) có diện tích lớn nhất.
-        /// </summary>
-        private PlanarFace FindTopFace(Element element)
-        {
-            PlanarFace bestFace = null;
-            double bestArea = 0;
-
-            GeometryElement geomElem = element.get_Geometry(new Options { ComputeReferences = true });
-            if (geomElem == null) return null;
-
-            foreach (GeometryObject geomObj in geomElem)
-            {
-                Solid solid = geomObj as Solid;
-                if (solid == null)
-                {
-                    if (geomObj is GeometryInstance geomInst)
-                    {
-                        GeometryElement instGeom = geomInst.GetInstanceGeometry();
-                        foreach (GeometryObject instObj in instGeom)
-                        {
-                            if (instObj is Solid s && s.Volume > 0)
-                            {
-                                PlanarFace pf = GetTopFaceInSolid(s, ref bestArea);
-                                if (pf != null) bestFace = pf;
-                            }
-                        }
-                    }
-                }
-                else if (solid.Volume > 0)
-                {
-                    PlanarFace pf = GetTopFaceInSolid(solid, ref bestArea);
-                    if (pf != null) bestFace = pf;
-                }
-            }
-
-            return bestFace;
-        }
-
-        private PlanarFace GetTopFaceInSolid(Solid solid, ref double bestArea)
-        {
-            PlanarFace bestFace = null;
-            foreach (Face face in solid.Faces)
-            {
-                if (face is PlanarFace pf)
-                {
-                    // Mặt top: Normal hướng lên (Z ≈ 1.0)
-                    if (pf.FaceNormal.Z < 0.9) continue;
-                    if (pf.Area > bestArea)
-                    {
-                        bestArea = pf.Area;
-                        bestFace = pf;
-                    }
-                }
-            }
-            return bestFace;
         }
 
         #endregion
