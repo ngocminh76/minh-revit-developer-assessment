@@ -110,7 +110,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 else
                 {
                     // ▶ TH2: Dầm đơn tại cột → clearance từ mép cột
-                    return ComputeColumnEndpoint(endpoint, outwardDir, nearCol, pillarCl);
+                    return ComputeColumnEndpoint(beam, endpoint, outwardDir, nearCol, pillarCl);
                 }
             }
 
@@ -151,42 +151,60 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
         #endregion
 
 
-        #region Helpers: Tìm mặt phẳng gần nhất và tính offset
-        private XYZ ComputeGapFromClosestFace(XYZ endpoint, XYZ outwardDir, Element element, double clearance)
+        #region Helpers: Tìm mặt phẳng đối diện dầm và tính offset
+        /// <summary>
+        /// Tính khoảng cách giữa 2 MẶT THỰC (mặt đầu dầm vs mặt cột),
+        /// rồi dời endpoint sao cho 2 mặt cách nhau đúng clearance.
+        /// </summary>
+        private XYZ ComputeGapFromFaces(FamilyInstance beam, XYZ endpoint, XYZ outwardDir, Element column, double clearance)
         {
-            PlanarFace closestFace = FindClosestFace(element, endpoint);
-            if (closestFace == null) return endpoint;
+            // 1. Tìm mặt cột hướng về phía dầm
+            PlanarFace colFace = FindFacingFace(column, outwardDir);
+            if (colFace == null) return endpoint;
 
-            XYZ faceNormal = closestFace.FaceNormal;
-            XYZ faceOrigin = closestFace.Origin;
+            XYZ colNormal = colFace.FaceNormal;
+            XYZ colOrigin = colFace.Origin;
 
-            // 1. Chiếu endpoint hiện tại lên mặt phẳng (để triệt tiêu sai số dầm vẽ lố/hụt)
-            double distToPlane = (endpoint - faceOrigin).DotProduct(faceNormal);
-            XYZ projectedPt = endpoint - distToPlane * faceNormal;
+            // 2. Tìm mặt đầu dầm (mặt solid có normal ≈ outwardDir)
+            PlanarFace beamEndFace = FindFacingFace(beam, outwardDir);
 
-            // 2. Hướng cắt ngắn dầm (hướng vào giữa thân dầm)
-            XYZ inwardDir = outwardDir.Negate();
+            // 3. Tính khoảng cách giữa 2 mặt thực
+            //    faceDist > 0: mặt dầm nằm NGOÀI mặt cột (có khe hở)
+            //    faceDist < 0: mặt dầm nằm BÊN TRONG cột (xuyên qua)
+            //    faceDist = 0: 2 mặt chạm nhau
+            double faceDist;
+            if (beamEndFace != null)
+            {
+                // Khoảng cách có dấu giữa 2 mặt phẳng song song
+                faceDist = (beamEndFace.Origin - colOrigin).DotProduct(colNormal);
+            }
+            else
+            {
+                // Fallback: dùng endpoint nếu không tìm được mặt dầm
+                faceDist = (endpoint - colOrigin).DotProduct(colNormal);
+            }
 
-            // 3. Tính quãng đường cần dời dọc theo inwardDir để có khoảng cách vuông góc = clearance
-            double dot = Math.Abs(inwardDir.DotProduct(faceNormal));
-            if (dot < 0.001) dot = 1.0; // Tránh lỗi chia 0
-            
-            double moveDist = clearance / dot;
-
-            // 4. Dời điểm đã chiếu vào trong thân dầm
-            XYZ result = projectedPt + inwardDir * moveDist;
+            // 4. Cần dời endpoint bao nhiêu để faceDist = clearance?
+            //    moveAmount > 0: dời ra xa cột (dầm ngắn lại)
+            //    moveAmount < 0: dời vào gần cột (dầm dài thêm)
+            double moveAmount = clearance - faceDist;
+            XYZ result = endpoint + colNormal * moveAmount;
 
             // === DEBUG LOG ===
             string logPath = @"D:\03.MINH\REVIT\RevitTest\beam_adjust_log.txt";
             try
             {
-                string log = $"\n--- NEW LOGIC: Dầm tại Cột/Tường [{element.Id}] ---\n"
-                    + $"  Face Normal:       ({faceNormal.X:F6}, {faceNormal.Y:F6}, {faceNormal.Z:F6})\n"
-                    + $"  Face Origin:       ({faceOrigin.X:F6}, {faceOrigin.Y:F6}, {faceOrigin.Z:F6})\n"
+                string beamFaceInfo = beamEndFace != null
+                    ? $"({beamEndFace.Origin.X:F6}, {beamEndFace.Origin.Y:F6}, {beamEndFace.Origin.Z:F6})"
+                    : "NOT FOUND (using endpoint)";
+                string log = $"\n--- FACE-TO-FACE: Dầm tại Cột/Tường [{column.Id}] ---\n"
+                    + $"  Col Face Normal:   ({colNormal.X:F6}, {colNormal.Y:F6}, {colNormal.Z:F6})\n"
+                    + $"  Col Face Origin:   ({colOrigin.X:F6}, {colOrigin.Y:F6}, {colOrigin.Z:F6})\n"
+                    + $"  Beam Face Origin:  {beamFaceInfo}\n"
                     + $"  outwardDir:        ({outwardDir.X:F6}, {outwardDir.Y:F6}, {outwardDir.Z:F6})\n"
-                    + $"  distToPlane:       {distToPlane:F6} ft ({distToPlane / MmToFeet:F1} mm)\n"
+                    + $"  faceDist:          {faceDist:F6} ft ({faceDist / MmToFeet:F1} mm)\n"
                     + $"  clearance:         {clearance:F6} ft ({clearance / MmToFeet:F1} mm)\n"
-                    + $"  moveDist:          {moveDist:F6} ft ({moveDist / MmToFeet:F1} mm)\n"
+                    + $"  moveAmount:        {moveAmount:F6} ft ({moveAmount / MmToFeet:F1} mm)\n"
                     + $"  Endpoint (before): ({endpoint.X:F6}, {endpoint.Y:F6}, {endpoint.Z:F6})\n"
                     + $"  Endpoint (after):  ({result.X:F6}, {result.Y:F6}, {result.Z:F6})\n";
                 System.IO.File.AppendAllText(logPath, log);
@@ -196,10 +214,14 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             return result;
         }
 
-        private PlanarFace FindClosestFace(Element element, XYZ endpoint)
+        /// <summary>
+        /// Tìm mặt cột/tường có pháp tuyến cùng hướng với outwardDir (hướng về phía dầm).
+        /// Dùng max dot product → luôn tìm đúng mặt dù dầm bị kéo xa bao nhiêu.
+        /// </summary>
+        private PlanarFace FindFacingFace(Element element, XYZ outwardDir)
         {
             PlanarFace bestFace = null;
-            double minDistance = double.MaxValue;
+            double bestDot = -1;
 
             GeometryElement geomElem = element.get_Geometry(new Options { ComputeReferences = true });
             if (geomElem == null) return null;
@@ -216,7 +238,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                         {
                             if (instObj is Solid s && s.Volume > 0)
                             {
-                                PlanarFace pf = GetClosestFaceInSolid(s, endpoint, ref minDistance);
+                                PlanarFace pf = GetBestFacingFaceInSolid(s, outwardDir, ref bestDot);
                                 if (pf != null) bestFace = pf;
                             }
                         }
@@ -224,7 +246,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 }
                 else if (solid.Volume > 0)
                 {
-                    PlanarFace pf = GetClosestFaceInSolid(solid, endpoint, ref minDistance);
+                    PlanarFace pf = GetBestFacingFaceInSolid(solid, outwardDir, ref bestDot);
                     if (pf != null) bestFace = pf;
                 }
             }
@@ -232,23 +254,23 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             return bestFace;
         }
 
-        private PlanarFace GetClosestFaceInSolid(Solid solid, XYZ endpoint, ref double minDistance)
+        private PlanarFace GetBestFacingFaceInSolid(Solid solid, XYZ outwardDir, ref double bestDot)
         {
             PlanarFace bestFace = null;
             foreach (Face face in solid.Faces)
             {
                 if (face is PlanarFace pf)
                 {
-                    // Bỏ qua mặt nằm ngang (đỉnh/đáy cột/tường)
+                    // Bỏ qua mặt nằm ngang (đỉnh/đáy)
                     if (Math.Abs(pf.FaceNormal.Z) > 0.3) continue;
-                    // Bỏ qua các mặt quá nhỏ (ví dụ: vát mép 10mm -> area rất nhỏ)
-                    if (pf.Area < 0.1) continue; 
+                    // Bỏ qua mặt vát mép nhỏ
+                    if (pf.Area < 0.1) continue;
 
-                    // Khoảng cách vuông góc từ endpoint tới mặt phẳng
-                    double dist = Math.Abs((endpoint - pf.Origin).DotProduct(pf.FaceNormal));
-                    if (dist < minDistance)
+                    // Tìm mặt có pháp tuyến trùng hướng outwardDir nhất
+                    double dot = outwardDir.DotProduct(pf.FaceNormal);
+                    if (dot > bestDot)
                     {
-                        minDistance = dist;
+                        bestDot = dot;
                         bestFace = pf;
                     }
                 }
@@ -258,11 +280,11 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
         #endregion
 
         /// <summary>
-        /// Dùng phương pháp tìm mặt gần nhất để tính offset
+        /// TH2: Dầm đơn tại cột - tính khoảng cách giữa mặt dầm và mặt cột
         /// </summary>
-        private XYZ ComputeColumnEndpoint(XYZ endpoint, XYZ outwardDir, FamilyInstance column, double clearance)
+        private XYZ ComputeColumnEndpoint(FamilyInstance beam, XYZ endpoint, XYZ outwardDir, FamilyInstance column, double clearance)
         {
-            return ComputeGapFromClosestFace(endpoint, outwardDir, column, clearance);
+            return ComputeGapFromFaces(beam, endpoint, outwardDir, column, clearance);
         }
 
         #region TH1: Dầm tại tường (TOÁN HỌC - Mặt phẳng)
