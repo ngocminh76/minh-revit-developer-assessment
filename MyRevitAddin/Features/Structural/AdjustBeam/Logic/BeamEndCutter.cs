@@ -18,97 +18,86 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
         private FamilySymbol _voidSymbol;
 
         /// <summary>
-        /// Cắt đầu dầm bằng void để face song song với cạnh cột.
-        /// </summary>
         /// <param name="doc">Document</param>
         /// <param name="beam">Dầm cần cắt</param>
-        /// <param name="cutOrigin">Vị trí endpoint (đã dời halfGap)</param>
+        /// <param name="cutOrigin">Vị trí điểm cắt (đã được dời halfGap so với tâm cột)</param>
         /// <param name="beamOutwardDir">Hướng ra ngoài đầu dầm</param>
-        /// <param name="edgeCutNormal">Pháp tuyến mặt cắt (từ cạnh cột, hướng ra ngoài dầm)</param>
-        public void CutBeamEnd(Document doc, FamilyInstance beam, XYZ cutOrigin, XYZ beamOutwardDir, XYZ edgeCutNormal)
+        /// <param name="cutNormal">Pháp tuyến mặt cắt (hướng ra ngoài dầm, về phía cột)</param>
+        public void CutBeamEnd(Document doc, FamilyInstance beam, XYZ cutOrigin, XYZ beamOutwardDir, XYZ cutNormal)
         {
-            // Kiểm tra: nếu hướng dầm ≈ hướng cạnh cột → không cần cắt
-            double dot = Math.Abs(beamOutwardDir.DotProduct(edgeCutNormal));
-            if (dot > AngleThreshold) return;
+            string logPath = @"D:\03.MINH\REVIT\RevitTest\beam_adjust_log.txt";
 
+            // 1. Tạo/lấy void symbol
             FamilySymbol symbol = GetOrCreateVoidSymbol(doc);
-            if (symbol == null) return;
-
-            // 1. Đặt void instance tại cutOrigin
-            FamilyInstance voidInst = doc.Create.NewFamilyInstance(
-                cutOrigin, symbol, StructuralType.NonStructural);
-
-            // 2. Xoay void cho khớp hướng cắt
-            //    Family void có extrusion dọc trục X. 
-            //    Cần xoay quanh Z để trục X → edgeCutNormal
-            double angle = Math.Atan2(edgeCutNormal.Y, edgeCutNormal.X);
-            if (Math.Abs(angle) > 1e-10)
+            if (symbol == null)
             {
-                Line zAxis = Line.CreateBound(cutOrigin, cutOrigin + XYZ.BasisZ);
-                ElementTransformUtils.RotateElement(doc, voidInst.Id, zAxis, angle);
+                Log(logPath, "[ERROR] Void symbol = NULL");
+                return;
             }
 
-            // 3. Áp dụng void cut
-            if (InstanceVoidCutUtils.CanBeCutWithVoid(beam))
-            {
-                InstanceVoidCutUtils.AddInstanceVoidCut(doc, beam, voidInst);
-            }
-
-            // Debug log
+            // 2. Đặt void tại cutOrigin
+            FamilyInstance voidInst = null;
             try
             {
-                string logPath = @"D:\03.MINH\REVIT\RevitTest\beam_adjust_log.txt";
-                string log = $"\n--- OPENING CUT: Dầm [{beam.Id}] ---\n"
-                    + $"  cutOrigin:      ({cutOrigin.X:F6}, {cutOrigin.Y:F6}, {cutOrigin.Z:F6})\n"
-                    + $"  beamOutwardDir: ({beamOutwardDir.X:F6}, {beamOutwardDir.Y:F6})\n"
-                    + $"  edgeCutNormal:  ({edgeCutNormal.X:F6}, {edgeCutNormal.Y:F6})\n"
-                    + $"  angle(deg):     {angle * 180 / Math.PI:F2}\n"
-                    + $"  voidId:         {voidInst.Id}\n";
-                File.AppendAllText(logPath, log);
+                voidInst = doc.Create.NewFamilyInstance(
+                    cutOrigin, symbol, StructuralType.NonStructural);
+                Log(logPath, $"[OK] Void created: Id={voidInst.Id}");
             }
-            catch { }
-        }
-
-        /// <summary>
-        /// Tìm hướng cạnh cột (crossing edge) mà dầm cắt ngang.
-        /// Trả về pháp tuyến cạnh hướng ra ngoài dầm (outward).
-        /// </summary>
-        public XYZ GetCrossingEdgeNormal(FamilyInstance column, XYZ beamOutwardDir)
-        {
-            PlanarFace topFace = FindTopFace(column);
-            if (topFace == null) return null;
-
-            XYZ colCenter = ((LocationPoint)column.Location).Point;
-            XYZ bestOutwardNormal = null;
-            double bestDot = -1;
-
-            foreach (CurveLoop loop in topFace.GetEdgesAsCurveLoops())
+            catch (Exception ex)
             {
-                foreach (Curve curve in loop)
+                Log(logPath, $"[ERROR] NewFamilyInstance: {ex.Message}");
+                return;
+            }
+
+            // 3. Xoay void: +X → cutNormal (ra ngoài, cắt phần thừa của dầm)
+            double angle = Math.Atan2(cutNormal.Y, cutNormal.X);
+            try
+            {
+                if (Math.Abs(angle) > 1e-10)
                 {
-                    if (!(curve is Line line)) continue;
-                    if (line.Length < 0.3) continue; // bỏ cạnh vát < ~90mm
+                    Line zAxis = Line.CreateBound(cutOrigin, cutOrigin + XYZ.BasisZ);
+                    ElementTransformUtils.RotateElement(doc, voidInst.Id, zAxis, angle);
+                }
+                Log(logPath, $"[OK] Rotated {angle * 180 / Math.PI:F2}°");
+            }
+            catch (Exception ex)
+            {
+                Log(logPath, $"[ERROR] Rotate: {ex.Message}");
+            }
 
-                    XYZ edgeDir = line.Direction;
-                    XYZ edgeMid = (line.GetEndPoint(0) + line.GetEndPoint(1)) * 0.5;
+            // 4. Áp dụng cut
+            bool canCut = InstanceVoidCutUtils.CanBeCutWithVoid(beam);
+            Log(logPath, $"[CHECK] CanBeCutWithVoid(beam {beam.Id}) = {canCut}");
 
-                    // Pháp tuyến cạnh: 2 hướng
-                    XYZ n = new XYZ(-edgeDir.Y, edgeDir.X, 0).Normalize();
-                    XYZ toCenter = new XYZ(colCenter.X - edgeMid.X, colCenter.Y - edgeMid.Y, 0);
-                    XYZ inward = n.DotProduct(toCenter) > 0 ? n : n.Negate();
-                    XYZ outward = inward.Negate();
-
-                    // Tìm cạnh có outwardNormal gần nhất với beamOutwardDir
-                    double d = beamOutwardDir.DotProduct(outward);
-                    if (d > bestDot)
-                    {
-                        bestDot = d;
-                        bestOutwardNormal = outward;
-                    }
+            try
+            {
+                if (canCut)
+                {
+                    InstanceVoidCutUtils.AddInstanceVoidCut(doc, beam, voidInst);
+                    Log(logPath, $"[OK] InstanceVoidCut: beam={beam.Id}, void={voidInst.Id}");
+                }
+                else
+                {
+                    SolidSolidCutUtils.AddCutBetweenSolids(doc, beam, voidInst);
+                    Log(logPath, $"[OK] SolidSolidCut: beam={beam.Id}, void={voidInst.Id}");
                 }
             }
+            catch (Exception ex)
+            {
+                Log(logPath, $"[ERROR] Cut failed: {ex.Message}");
+            }
 
-            return bestOutwardNormal;
+            // 5. Summary
+            Log(logPath, $"\n--- OPENING CUT: Dầm [{beam.Id}] ---\n"
+                + $"  cutOrigin:      ({cutOrigin.X:F6}, {cutOrigin.Y:F6}, {cutOrigin.Z:F6})\n"
+                + $"  beamOutwardDir: ({beamOutwardDir.X:F6}, {beamOutwardDir.Y:F6})\n"
+                + $"  cutNormal:      ({cutNormal.X:F6}, {cutNormal.Y:F6})\n"
+                + $"  voidId:         {voidInst.Id}\n");
+        }
+
+        private void Log(string path, string msg)
+        {
+            try { File.AppendAllText(path, msg + "\n"); } catch { }
         }
 
         #region Private: Void Family

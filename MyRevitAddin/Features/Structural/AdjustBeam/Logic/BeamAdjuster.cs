@@ -83,28 +83,31 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             // Tính endpoint mới + ghi nhận nếu là TH3
             FamilyInstance startCol = null, endCol = null;
             bool startIsInline = false, endIsInline = false;
+            bool startNeedsVoid = false, endNeedsVoid = false;
+            XYZ startCutNormal = XYZ.Zero, endCutNormal = XYZ.Zero;
+            XYZ startCutOrigin = XYZ.Zero, endCutOrigin = XYZ.Zero;
 
             XYZ newStart = ComputeNewEndpointEx(beam, start, beamDir.Negate(), beamDir,
-                wallCl, pillarCl, halfGap, perpGap, out startCol, out startIsInline);
+                wallCl, pillarCl, halfGap, perpGap, 
+                out startCol, out startIsInline, out startNeedsVoid, out startCutNormal, out startCutOrigin);
+            
             XYZ newEnd = ComputeNewEndpointEx(beam, end, beamDir, beamDir,
-                wallCl, pillarCl, halfGap, perpGap, out endCol, out endIsInline);
+                wallCl, pillarCl, halfGap, perpGap, 
+                out endCol, out endIsInline, out endNeedsVoid, out endCutNormal, out endCutOrigin);
 
             // Dời endpoint
+            // Trong trường hợp TH3 (chéo), endpoint đã được thiết lập để đâm thẳng vào tâm cột trong ComputeInlineEndpoint
             if (newStart.DistanceTo(newEnd) > 0.01)
                 locCurve.Curve = Line.CreateBound(newStart, newEnd);
 
-            // Áp dụng Opening Cut cho TH3 (parallel faces)
-            if (startIsInline && startCol != null)
+            // Áp dụng Opening Cut cho TH3 (nếu dầm bị chéo)
+            if (startIsInline && startNeedsVoid && startCol != null)
             {
-                XYZ edgeNormal = _cutter.GetCrossingEdgeNormal(startCol, beamDir.Negate());
-                if (edgeNormal != null)
-                    _cutter.CutBeamEnd(_doc, beam, newStart, beamDir.Negate(), edgeNormal);
+                _cutter.CutBeamEnd(_doc, beam, startCutOrigin, beamDir.Negate(), startCutNormal);
             }
-            if (endIsInline && endCol != null)
+            if (endIsInline && endNeedsVoid && endCol != null)
             {
-                XYZ edgeNormal = _cutter.GetCrossingEdgeNormal(endCol, beamDir);
-                if (edgeNormal != null)
-                    _cutter.CutBeamEnd(_doc, beam, newEnd, beamDir, edgeNormal);
+                _cutter.CutBeamEnd(_doc, beam, endCutOrigin, beamDir, endCutNormal);
             }
         }
 
@@ -113,10 +116,14 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
         /// </summary>
         private XYZ ComputeNewEndpointEx(FamilyInstance beam, XYZ endpoint, XYZ outwardDir, XYZ beamDir,
             double wallCl, double pillarCl, double halfGap, double perpGap,
-            out FamilyInstance nearbyColumn, out bool isInline)
+            out FamilyInstance nearbyColumn, out bool isInline,
+            out bool needsVoidCut, out XYZ cutNormal, out XYZ cutOrigin)
         {
             nearbyColumn = null;
             isInline = false;
+            needsVoidCut = false;
+            cutNormal = XYZ.Zero;
+            cutOrigin = XYZ.Zero;
             XYZ inwardDir = outwardDir.Negate();
 
             // ═══════ Ưu tiên 1: CỘT ═══════
@@ -126,10 +133,10 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 FamilyInstance inlineBeam = FindInlineBeamAtColumn(beam, nearCol, outwardDir);
                 if (inlineBeam != null)
                 {
-                    // ▶ TH3: Hai dầm cùng phương → halfGap + Opening Cut
+                    // ▶ TH3: Hai dầm cùng phương
                     nearbyColumn = nearCol;
                     isInline = true;
-                    return ComputeInlineEndpoint(beam, endpoint, outwardDir, nearCol, halfGap);
+                    return ComputeInlineEndpoint(endpoint, outwardDir, nearCol, halfGap, out needsVoidCut, out cutNormal, out cutOrigin);
                 }
                 else
                 {
@@ -159,36 +166,77 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
 
         #endregion
 
-        #region TH3: Hai dầm cùng phương tại cột (Offset halfGap)
+        #region TH3: Hai dầm cùng phương tại cột (Offset line trung điểm)
 
         /// <summary>
-        /// Mỗi endpoint dời halfGap về phía thân dầm (inward).
-        /// Không phụ thuộc vị trí tâm cột hay hình dạng cột.
+        /// Logic TH3:
+        /// 1. Tìm trục trung điểm của cột (dựa vào BasisX, BasisY của cột) gần vuông góc với dầm nhất.
+        /// 2. Offset trục này ra 10mm (halfGap) để tạo mặt cắt mục tiêu.
+        /// 3. Nếu dầm thẳng (vuông góc mặt cắt) -> dời endpoint về mặt cắt.
+        /// 4. Nếu dầm chéo -> đâm thẳng xuyên cột, dùng Opening Cut để vạt chéo.
         /// </summary>
-        private XYZ ComputeInlineEndpoint(FamilyInstance beam, XYZ endpoint, XYZ outwardDir, FamilyInstance column, double halfGap)
+        private XYZ ComputeInlineEndpoint(XYZ endpoint, XYZ outwardDir, FamilyInstance column, double halfGap,
+            out bool needsVoidCut, out XYZ cutNormal, out XYZ cutOrigin)
         {
-            XYZ inwardDir = outwardDir.Negate();
-            XYZ result = new XYZ(
-                endpoint.X + inwardDir.X * halfGap,
-                endpoint.Y + inwardDir.Y * halfGap,
-                endpoint.Z);
+            needsVoidCut = false;
+            cutNormal = XYZ.Zero;
+            cutOrigin = XYZ.Zero;
 
+            LocationPoint locPoint = column.Location as LocationPoint;
+            XYZ colCenter = locPoint != null ? locPoint.Point : endpoint;
+
+            Transform t = column.GetTransform();
+            XYZ axisX = t.BasisX;
+            XYZ axisY = t.BasisY;
+
+            // Tìm trục cột gần song song với tia dầm nhất (vì mặt dầm vuông góc với tia)
+            double dotX = Math.Abs(outwardDir.DotProduct(axisX));
+            double dotY = Math.Abs(outwardDir.DotProduct(axisY));
+
+            // Trục cắt (cutNormal) là trục cột song song với hướng dầm nhất
+            cutNormal = (dotX > dotY) ? axisX : axisY;
+            
+            // Đảm bảo cutNormal hướng ra ngoài dầm (về phía tâm cột)
+            if (cutNormal.DotProduct(outwardDir) < 0)
+            {
+                cutNormal = cutNormal.Negate();
+            }
+
+            // Mặt cắt mục tiêu (cách tâm cột halfGap về phía dầm)
+            // Vì cutNormal hướng về tâm cột, điểm cắt = colCenter - cutNormal * halfGap
+            cutOrigin = colCenter - cutNormal * halfGap;
+
+            // Kiểm tra độ song song (nếu dầm song song với cutNormal tức là dầm vuông góc với line offset)
+            double dot = outwardDir.DotProduct(cutNormal);
+            
             // === DEBUG LOG ===
             string logPath = @"D:\03.MINH\REVIT\RevitTest\beam_adjust_log.txt";
             try
             {
-                XYZ colCenter = ((LocationPoint)column.Location).Point;
-                string log = $"\n--- TH3 INLINE: Dầm [{beam.Id}] tại Cột [{column.Id}] ---\n"
-                    + $"  outwardDir:        ({outwardDir.X:F6}, {outwardDir.Y:F6})\n"
-                    + $"  halfGap:           {halfGap:F6} ft ({halfGap / MmToFeet:F1} mm)\n"
-                    + $"  Column center:     ({colCenter.X:F6}, {colCenter.Y:F6})\n"
-                    + $"  Endpoint (before): ({endpoint.X:F6}, {endpoint.Y:F6})\n"
-                    + $"  Endpoint (after):  ({result.X:F6}, {result.Y:F6})\n";
+                string log = $"\n--- TH3 INLINE ---\n"
+                    + $"  outwardDir:    ({outwardDir.X:F6}, {outwardDir.Y:F6})\n"
+                    + $"  cutNormal:     ({cutNormal.X:F6}, {cutNormal.Y:F6})\n"
+                    + $"  dot:           {dot:F6}\n";
                 System.IO.File.AppendAllText(logPath, log);
             }
             catch { }
 
-            return result;
+            if (dot > 0.9998) // Song song (sai số ~1 độ)
+            {
+                needsVoidCut = false;
+                // Dầm thẳng -> dời endpoint (chiếu lên mặt phẳng cắt)
+                // P_new = endpoint + outwardDir * t
+                // (P_new - cutOrigin) . cutNormal = 0 => t = (cutOrigin - endpoint).cutNormal / (outwardDir.cutNormal)
+                double t_intersect = (cutOrigin - endpoint).DotProduct(cutNormal) / dot;
+                return endpoint + outwardDir * t_intersect;
+            }
+            else // Chéo
+            {
+                needsVoidCut = true;
+                // Dầm chéo -> đưa endpoint vượt quá tâm cột (thêm 1.0 ft)
+                // để CHẮC CHẮN toàn bộ mặt xéo của dầm vượt qua mặt cắt, sau đó Void sẽ gọt sạch chừa lại 1 mặt phẳng duy nhất.
+                return new XYZ(colCenter.X, colCenter.Y, endpoint.Z) + outwardDir * 1.0;
+            }
         }
 
         #endregion
