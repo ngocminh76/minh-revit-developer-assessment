@@ -1,17 +1,17 @@
-using System;
-using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using MyRevitAddin.Core;
+using System.Collections.Generic;
 
 namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
 {
     public enum TargetType
     {
         None,
-        Wall,                  // TH1
-        SingleColumn,          // TH2
-        InlineColumn,          // TH3
-        PerpendicularBeam      // TH4
+        Wall,                  // Case 1: Beam meets wall
+        SingleColumn,          // Case 2: Beam meets single column
+        InlineColumn,          // Case 3: Two collinear beams meet at column
+        PerpendicularBeam,     // Case 4: Non-collinear beam meets perpendicular beam
+        InlinePerpendicularBeam // Case 4b: Two collinear beams meet at perpendicular beam
     }
 
     public class TargetContext
@@ -41,15 +41,41 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             double halfGap = (config.BeamToBeamInlineGap / 2.0) * MmToFeet;
             double perpGap = config.BeamToBeamPerpendicularGap * MmToFeet;
 
-            using (Transaction t = new Transaction(doc, "Adjust Structural Beams"))
+            try
             {
-                t.Start();
-                foreach (var beam in _beams)
+                using (TransactionGroup tg = new TransactionGroup(doc, "Adjust Structural Beams"))
                 {
-                    try { AdjustSingleBeam(beam, wallCl, pillarCl, halfGap, perpGap); }
-                    catch { }
+                    tg.Start();
+
+                    for (int i = 0; i < _beams.Count; i++)
+                    {
+                        var beam = _beams[i];
+
+                        using (Transaction t = new Transaction(doc, "Adjust Single Beam"))
+                        {
+                            t.Start();
+                            try
+                            {
+                                AdjustSingleBeam(beam, wallCl, pillarCl, halfGap, perpGap);
+                            }
+                            catch { }
+                            t.Commit();
+                        }
+
+                        WPFUI.Utilities.ProgressDialog.ShowProgress(
+                            current: i + 1,
+                            total: _beams.Count,
+                            message: "Adjusting structural beams...",
+                            detail: $"Completed beam: {beam.Name} (ID: {beam.Id})"
+                        );
+                    }
+
+                    tg.Assimilate();
                 }
-                t.Commit();
+            }
+            finally
+            {
+                WPFUI.Utilities.ProgressDialog.CloseProgress();
             }
         }
 
@@ -90,23 +116,44 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             XYZ startCutOrigin = XYZ.Zero, endCutOrigin = XYZ.Zero;
 
             TargetContext startTarget = IdentifyTarget(beam, start, beamDir.Negate(), beamDir);
-            XYZ newStart = ComputeNewEndpoint(beam, start, beamDir.Negate(), startTarget, 
-                wallCl, pillarCl, halfGap, perpGap, 
+            XYZ newStart = ComputeNewEndpoint(beam, start, beamDir.Negate(), startTarget,
+                wallCl, pillarCl, halfGap, perpGap,
                 out startNeedsVoid, out startCutNormal, out startCutOrigin);
 
             TargetContext endTarget = IdentifyTarget(beam, end, beamDir, beamDir);
-            XYZ newEnd = ComputeNewEndpoint(beam, end, beamDir, endTarget, 
-                wallCl, pillarCl, halfGap, perpGap, 
+            XYZ newEnd = ComputeNewEndpoint(beam, end, beamDir, endTarget,
+                wallCl, pillarCl, halfGap, perpGap,
                 out endNeedsVoid, out endCutNormal, out endCutOrigin);
 
             if (newStart.DistanceTo(newEnd) > 0.01)
                 locCurve.Curve = Line.CreateBound(newStart, newEnd);
 
-            if (startTarget.IsInline && startNeedsVoid && startTarget.TargetElement is FamilyInstance)
+            // Case 3: InlineColumn -> half-space void cut
+            if (startNeedsVoid && startTarget.Type == TargetType.InlineColumn && startTarget.TargetElement is FamilyInstance)
             {
                 _cutter.CutBeamEnd(_doc, beam, startCutOrigin, beamDir.Negate(), startCutNormal);
             }
-            if (endTarget.IsInline && endNeedsVoid && endTarget.TargetElement is FamilyInstance)
+            if (endNeedsVoid && endTarget.Type == TargetType.InlineColumn && endTarget.TargetElement is FamilyInstance)
+            {
+                _cutter.CutBeamEnd(_doc, beam, endCutOrigin, beamDir, endCutNormal);
+            }
+
+            // Case 4: PerpendicularBeam -> slab void cut (only cut intersection zone)
+            if (startTarget.Type == TargetType.PerpendicularBeam && startTarget.TargetElement != null)
+            {
+                _cutter.CutBeamPerpendicular(_doc, beam, startTarget.TargetElement, beamDir.Negate(), perpGap);
+            }
+            if (endTarget.Type == TargetType.PerpendicularBeam && endTarget.TargetElement != null)
+            {
+                _cutter.CutBeamPerpendicular(_doc, beam, endTarget.TargetElement, beamDir, perpGap);
+            }
+
+            // Case 4b: InlinePerpendicularBeam -> void cut at intersection
+            if (startNeedsVoid && startTarget.Type == TargetType.InlinePerpendicularBeam)
+            {
+                _cutter.CutBeamEnd(_doc, beam, startCutOrigin, beamDir.Negate(), startCutNormal);
+            }
+            if (endNeedsVoid && endTarget.Type == TargetType.InlinePerpendicularBeam)
             {
                 _cutter.CutBeamEnd(_doc, beam, endCutOrigin, beamDir, endCutNormal);
             }
@@ -116,7 +163,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
         {
             TargetContext ctx = new TargetContext { Type = TargetType.None };
 
-            // Ưu tiên 1: CỘT
+            // Priority 1: Column
             FamilyInstance nearCol = ElementProximityUtils.FindNearestColumn(endpoint, _columns);
             if (nearCol != null)
             {
@@ -134,7 +181,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 return ctx;
             }
 
-            // Ưu tiên 2: TƯỜNG
+            // Priority 2: Wall
             Wall nearWall = ElementProximityUtils.FindNearestWall(endpoint, _walls);
             if (nearWall != null)
             {
@@ -143,7 +190,26 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 return ctx;
             }
 
-            // Ưu tiên 3: DẦM VUÔNG GÓC
+            // Priority 3: Inline beam (collinear, end-to-end)
+            FamilyInstance connectedInlineBeam = ElementProximityUtils.FindInlineBeamAtEndpoint(beam, endpoint, outwardDir, _beams);
+            if (connectedInlineBeam != null)
+            {
+                // Check if a perpendicular beam exists at this endpoint
+                FamilyInstance perpAtInline = ElementProximityUtils.FindPerpendicularBeam(beam, endpoint, beamDir, _beams);
+                if (perpAtInline != null)
+                {
+                    // Case 4b: Two collinear beams meet AT a perpendicular beam
+                    // -> Shorten by perpGap/2 and apply void cut
+                    ctx.TargetElement = perpAtInline;
+                    ctx.Type = TargetType.InlinePerpendicularBeam;
+                    ctx.IsInline = true;
+                    return ctx;
+                }
+
+                return ctx; // Return None - no perpendicular beam, skip
+            }
+
+            // Priority 4: Perpendicular beam (non-collinear beam meets perpendicular beam)
             FamilyInstance perpBeam = ElementProximityUtils.FindPerpendicularBeam(beam, endpoint, beamDir, _beams);
             if (perpBeam != null)
             {
@@ -166,7 +232,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             switch (target.Type)
             {
                 case TargetType.InlineColumn:
-                    return GeometryHelper.ComputeInlineEndpoint(endpoint, outwardDir, target.TargetElement as FamilyInstance, halfGap, 
+                    return GeometryHelper.ComputeInlineEndpoint(endpoint, outwardDir, target.TargetElement as FamilyInstance, halfGap,
                         out needsVoidCut, out cutNormal, out cutOrigin);
 
                 case TargetType.SingleColumn:
@@ -176,7 +242,11 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                     return GeometryHelper.ComputeGapFromFaces(beam, endpoint, outwardDir, target.TargetElement, wallCl);
 
                 case TargetType.PerpendicularBeam:
-                    return GeometryHelper.ComputePerpBeamEndpoint(endpoint, outwardDir, target.TargetElement as FamilyInstance, perpGap);
+                    return GeometryHelper.ComputePerpBeamEndpoint(endpoint);
+
+                case TargetType.InlinePerpendicularBeam:
+                    return GeometryHelper.ComputeInlinePerpEndpoint(endpoint, outwardDir, perpGap / 2.0,
+                        out needsVoidCut, out cutNormal, out cutOrigin);
 
                 default:
                     return endpoint;

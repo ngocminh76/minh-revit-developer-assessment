@@ -73,5 +73,57 @@ namespace MyRevitAddin.Core
             }
             return bestFace;
         }
+        /// <summary>
+        /// Finds the web face (largest area) of the target element facing towards the target beam.
+        /// Used for perpendicular beams where the web face is required instead of the flange face.
+        /// </summary>
+        public static PlanarFace FindNearWebFace(Element element, XYZ outwardDir)
+        {
+            XYZ searchDir = outwardDir.Negate(); // Direction facing towards the target beam
+            PlanarFace bestFace = null;
+            double bestArea = 0;
+
+            GeometryElement geomElem = element.get_Geometry(new Options { ComputeReferences = true });
+            if (geomElem == null) return null;
+
+            foreach (GeometryObject geomObj in geomElem)
+            {
+                Solid solid = geomObj as Solid;
+                if (solid == null && geomObj is GeometryInstance gi)
+                {
+                    foreach (GeometryObject instObj in gi.GetInstanceGeometry())
+                    {
+                        if (instObj is Solid s && s.Volume > 0)
+                            GetLargestFacingFace(s, searchDir, ref bestFace, ref bestArea);
+                    }
+                }
+                else if (solid != null && solid.Volume > 0)
+                {
+                    GetLargestFacingFace(solid, searchDir, ref bestFace, ref bestArea);
+                }
+            }
+
+            return bestFace;
+        }
+
+        private static void GetLargestFacingFace(Solid solid, XYZ searchDir, ref PlanarFace bestFace, ref double bestArea)
+        {
+            foreach (Face face in solid.Faces)
+            {
+                if (face is PlanarFace pf)
+                {
+                    if (Math.Abs(pf.FaceNormal.Z) > 0.3) continue;
+
+                    double dot = searchDir.DotProduct(pf.FaceNormal);
+                    if (dot < 0.85) continue; // Only consider faces nearly parallel to searchDir
+
+                    if (pf.Area > bestArea)
+                    {
+                        bestArea = pf.Area;
+                        bestFace = pf;
+                    }
+                }
+            }
+        }
     }
 }

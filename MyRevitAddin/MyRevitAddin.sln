@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36327.8 d17.14
+VisualStudioVersion = 17.14.36327.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyRevitAddin", "MyRevitAddin.csproj", "{D6E5438C-B68F-FB17-9718-6DF01E76C2C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFUI", "..\..\..\AecDevHub\AecDevHub\src\WPFUI\WPFUI.csproj", "{2F518C30-FBA0-98AE-0EE3-19EEED704AA7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFUI", "..\WPFUI\WPFUI.csproj", "{0E777D0B-B1BA-5646-B8F0-A7371C2F0D4B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{D6E5438C-B68F-FB17-9718-6DF01E76C2C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6E5438C-B68F-FB17-9718-6DF01E76C2C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6E5438C-B68F-FB17-9718-6DF01E76C2C0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2F518C30-FBA0-98AE-0EE3-19EEED704AA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2F518C30-FBA0-98AE-0EE3-19EEED704AA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2F518C30-FBA0-98AE-0EE3-19EEED704AA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2F518C30-FBA0-98AE-0EE3-19EEED704AA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E777D0B-B1BA-5646-B8F0-A7371C2F0D4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E777D0B-B1BA-5646-B8F0-A7371C2F0D4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E777D0B-B1BA-5646-B8F0-A7371C2F0D4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E777D0B-B1BA-5646-B8F0-A7371C2F0D4B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

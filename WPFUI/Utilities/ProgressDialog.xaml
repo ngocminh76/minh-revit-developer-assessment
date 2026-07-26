@@ -1,0 +1,57 @@
+<Window x:Class="WPFUI.Utilities.ProgressDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Processing..."
+        Width="450"
+        Height="150"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="{DynamicResource BrushBgWindow}"
+        Foreground="{DynamicResource BrushText}"
+        FontFamily="{DynamicResource MainFontFamily}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/WPFUI;component/Styles/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <StackPanel>
+            <TextBlock x:Name="ProgressTextBlock"
+                       Style="{StaticResource TextBlockStyle}"
+                       Text="Initializing..."
+                       Margin="0,0,0,15"
+                       FontSize="12"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource BrushPrimary}"
+                       TextWrapping="Wrap"/>
+            
+            <ProgressBar x:Name="ProgressBar"
+                         Style="{StaticResource ProgressBarStyle}"
+                         Height="20"
+                         Minimum="0"
+                         Maximum="100"
+                         Value="0"/>
+            
+            <TextBlock x:Name="ProgressPercentText"
+                       Style="{StaticResource TextBlockStyle}"
+                       Text="0%"
+                       HorizontalAlignment="Center"
+                       Margin="0,5,0,0"
+                       FontSize="12"
+                       Foreground="{DynamicResource BrushPrimary}"/>
+                       
+            <TextBlock x:Name="DetailTextBlock"
+                       Style="{StaticResource TextBlockStyle}"
+                       Text=""
+                       Margin="0,10,0,0"
+                       FontSize="11"
+                       Foreground="{DynamicResource BrushTextSecondary}"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+    </Grid>
+</Window>

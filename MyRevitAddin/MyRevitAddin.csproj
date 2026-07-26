@@ -43,9 +43,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Commands\" />
     <Folder Include="Core\" />
-    <Folder Include="Features\Architecture\" />
     <Folder Include="Features\Structural\" />
   </ItemGroup>
 

@@ -290,17 +290,12 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
         private List<ViewSchedule> CreateAssemblySchedules(AssemblyInstance assembly)
         {
             List<ViewSchedule> schedules = new List<ViewSchedule>();
-            string logPath = @"D:\03.MINH\REVIT\RevitTest\schedule_log.txt";
-            System.IO.File.AppendAllText(logPath, $"\n--- Creating schedules for Assembly: {assembly.Name} ---\n");
 
             foreach (var template in _scheduleTemplates)
             {
-                // Lấy đúng Category của Template để tạo Schedule (tránh mất cột/field do sai Category)
                 ElementId catId = template.Definition.CategoryId;
                 bool isMaterialTakeoff = false;
                 try { isMaterialTakeoff = template.Definition.IsMaterialTakeoff; } catch { }
-
-                System.IO.File.AppendAllText(logPath, $"Template: {template.Name}, CatId: {catId}, IsMaterialTakeoff: {isMaterialTakeoff}\n");
 
                 if (catId == ElementId.InvalidElementId) 
                     catId = new ElementId((long)BuiltInCategory.OST_GenericModel);
@@ -310,7 +305,6 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
                 {
                     if (isMaterialTakeoff)
                     {
-                        // Hàm CreateMaterialTakeoff trong Revit API yêu cầu tham số 3 là viewTemplateId chứ không phải categoryId
                         schedule = AssemblyViewUtils.CreateMaterialTakeoff(_doc, assembly.Id, template.Id, true);
                     }
                     else
@@ -318,9 +312,8 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
                         schedule = AssemblyViewUtils.CreateSingleCategorySchedule(_doc, assembly.Id, catId);
                     }
                 }
-                catch (System.Exception ex)
+                catch
                 {
-                    System.IO.File.AppendAllText(logPath, $"  FAILED to create exact schedule: {ex.Message}\n");
                 }
 
                 if (schedule != null)
@@ -352,16 +345,15 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
             // 3. Layout Schedules
             double mmToFeet = 1.0 / 304.8;
             
-            // Lấy BoundingBox thực tế của Khung tên
+            // Get TitleBlock BoundingBox
             BoundingBoxXYZ tbBox = GetTitleBlockBoundingBox(sheet);
             if (tbBox == null) return;
 
-            // Đọc tọa độ Min thực tế của Khung tên (A4 là 0, A3 là -0.69 feet)
+            // Read Min coordinates of TitleBlock
             double paperMinX = tbBox.Min.X;
             double paperMinY = tbBox.Min.Y;
 
-            // Danh sách tọa độ chính xác tuyệt đối (Sheet Space) theo ảnh của user (đơn vị feet)
-            // Tọa độ này đúng cho CẢ A3 và A4 vì Khung tên A3 và A4 có chung một hệ quy chiếu gốc (từ bên phải)
+            // Schedule absolute positions (Sheet space in feet)
             var schedulePositions = new System.Collections.Generic.Dictionary<string, XYZ>
             {
                 { "Base Component", new XYZ(0.01, 0.23, 0) },
@@ -386,12 +378,12 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
                     XYZ currentMin = bbox.Min;
                     XYZ targetMin = null;
 
-                    // Khớp tên Schedule để lấy tọa độ tuyệt đối tương ứng
+                    // Match schedule name to get corresponding absolute position
                     foreach (var kvp in schedulePositions)
                     {
                         if (schedule.Name.Contains(kvp.Key))
                         {
-                            targetMin = kvp.Value; // Dùng TỌA ĐỘ TUYỆT ĐỐI
+                            targetMin = kvp.Value;
                             break;
                         }
                     }
@@ -402,7 +394,7 @@ namespace MyRevitAddin.Features.Annotations.BearingPlate.Commands
                     }
                     else
                     {
-                        // Tạm thời xếp các bảng khác lên cao để chờ user cung cấp thêm tọa độ
+                        // Stack other schedules vertically if not matched
                         targetMin = new XYZ(0.01, currentOtherY, 0);
                         ElementTransformUtils.MoveElement(_doc, ssi.Id, targetMin - currentMin);
                         

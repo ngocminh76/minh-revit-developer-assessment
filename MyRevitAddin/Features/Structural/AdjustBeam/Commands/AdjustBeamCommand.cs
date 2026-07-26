@@ -7,6 +7,9 @@ using MyRevitAddin.Features.Structural.AdjustBeam.Views;
 
 namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
 {
+    /// <summary>
+    /// Command to execute the Adjust Beam tool.
+    /// </summary>
     [Transaction(TransactionMode.Manual)]
     public class AdjustBeamCommand : IExternalCommand
     {
@@ -15,7 +18,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
             UIDocument uidoc = commandData.Application.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            // Lấy danh sách chọn trước (nếu có)
+            // Get current selection set (if any)
             var selectedIds = uidoc.Selection.GetElementIds() as ICollection<ElementId> ?? new List<ElementId>();
 
             try
@@ -23,16 +26,16 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
                 var viewModel = new AdjustBeamViewModel();
                 var window = new AdjustBeamWindow(viewModel);
 
-                // Gắn View vào ViewModel để nó có thể tự Close()
+                // Attach View to ViewModel for window control
                 viewModel.AdjustBeamView = window;
 
-                // Hiển thị dạng Modal, code sẽ dừng ở đây chờ người dùng đóng cửa sổ
+                // Display dialog modally
                 window.ShowDialog();
 
-                // Người dùng đã bấm OK
+                // Proceed if user clicked OK
                 if (viewModel.IsOKClicked)
                 {
-                    // Nếu chưa chọn gì trước đó, cho phép PickObjects
+                    // Prompt element selection if nothing pre-selected
                     if (selectedIds.Count == 0)
                     {
                         try
@@ -46,7 +49,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
                         }
                         catch (Autodesk.Revit.Exceptions.OperationCanceledException)
                         {
-                            // Người dùng bấm ESC khi đang quét chuột
+                            // User canceled selection
                             return Result.Cancelled;
                         }
                     }

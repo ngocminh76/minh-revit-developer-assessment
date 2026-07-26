@@ -75,5 +75,31 @@ namespace MyRevitAddin.Core
             }
             return nearest;
         }
+        /// <summary>
+        /// Finds a collinear (inline) beam connected at the endpoint with no intervening column.
+        /// If found, this endpoint does not require adjustment.
+        /// </summary>
+        public static FamilyInstance FindInlineBeamAtEndpoint(FamilyInstance thisBeam, XYZ endpoint, XYZ outwardDir, IEnumerable<FamilyInstance> beams)
+        {
+            double endpointTolerance = 1.0; // ~305mm, joint tolerance
+
+            foreach (var other in beams)
+            {
+                if (other.Id == thisBeam.Id) continue;
+                var olc = other.Location as LocationCurve;
+                if (olc == null) continue;
+                var ol = olc.Curve as Line;
+                if (ol == null) continue;
+
+                // Check collinear orientation: dot > 0.966 (~15°)
+                if (Math.Abs(outwardDir.DotProduct(ol.Direction)) < 0.966) continue;
+
+                // Check if an endpoint of the other beam is near this endpoint
+                if (MathUtils.Dist2D(ol.GetEndPoint(0), endpoint) < endpointTolerance ||
+                    MathUtils.Dist2D(ol.GetEndPoint(1), endpoint) < endpointTolerance)
+                    return other;
+            }
+            return null;
+        }
     }
 }

@@ -25,3 +25,13 @@ x86/
 
 # Bỏ qua thư mục Dll (chứa RevitAPI nặng)
 Dll/
+# Log files
+*.log
+*_log.txt
+beam_adjust_log.txt
+inspect_faces_log.txt
+inspect_beams_log.txt
+schedule_log.txt
+
+# Scratch/temp
+scratch/

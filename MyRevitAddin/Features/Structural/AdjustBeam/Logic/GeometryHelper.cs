@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using MyRevitAddin.Core;
 
@@ -7,8 +5,6 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
 {
     public static class GeometryHelper
     {
-        private const double MmToFeet = 1.0 / 304.8;
-        
         public static XYZ ComputeGapFromFaces(FamilyInstance beam, XYZ endpoint, XYZ outwardDir, Element targetElement, double clearance)
         {
             PlanarFace targetFace = SolidFaceUtils.FindFacingFace(targetElement, outwardDir);
@@ -53,7 +49,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             double dotY = Math.Abs(outwardDir.DotProduct(axisY));
 
             cutNormal = (dotX > dotY) ? axisX : axisY;
-            
+
             if (cutNormal.DotProduct(outwardDir) < 0)
             {
                 cutNormal = cutNormal.Negate();
@@ -75,28 +71,34 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             }
         }
 
-        public static XYZ ComputePerpBeamEndpoint(XYZ endpoint, XYZ outwardDir, FamilyInstance perpBeam, double clearance)
+        /// <summary>
+        /// Case 4: Non-collinear beam meets perpendicular beam - returns original endpoint.
+        /// Opening Cut creation is handled separately in BeamEndCutter.CutBeamPerpendicular.
+        /// </summary>
+        public static XYZ ComputePerpBeamEndpoint(XYZ endpoint)
         {
-            XYZ inwardDir = outwardDir.Negate();
+            return endpoint;
+        }
 
-            LocationCurve perpLoc = perpBeam.Location as LocationCurve;
-            if (perpLoc == null) return endpoint;
-            Line perpLine = perpLoc.Curve as Line;
-            if (perpLine == null) return endpoint;
+        /// <summary>
+        /// Case 4b: Two collinear beams meet at a perpendicular beam.
+        /// Shortens each beam by perpGap/2 and creates a void cut.
+        /// </summary>
+        public static XYZ ComputeInlinePerpEndpoint(XYZ endpoint, XYZ outwardDir, double halfPerpGap,
+            out bool needsVoidCut, out XYZ cutNormal, out XYZ cutOrigin)
+        {
+            needsVoidCut = true;
 
-            XYZ closestOnPerp = MathUtils.ClosestOnSegment(endpoint, perpLine.GetEndPoint(0), perpLine.GetEndPoint(1));
-            XYZ centerOnOurLine = MathUtils.ProjectPointOnLine(closestOnPerp, endpoint, outwardDir);
+            // cutNormal = outward direction (direction extending away from beam at this endpoint)
+            cutNormal = outwardDir;
 
-            BoundingBoxXYZ bb = perpBeam.get_BoundingBox(null);
-            if (bb == null) return endpoint;
+            // Shorten endpoint: step back by halfPerpGap
+            XYZ newEndpoint = endpoint - outwardDir * halfPerpGap;
 
-            double dimX = bb.Max.X - bb.Min.X;
-            double dimY = bb.Max.Y - bb.Min.Y;
+            // cutOrigin = cut plane position = newEndpoint
+            cutOrigin = newEndpoint;
 
-            double crossSectionWidth = Math.Min(dimX, dimY);
-            double halfCrossWidth = crossSectionWidth / 2.0;
-
-            return centerOnOurLine + inwardDir * (halfCrossWidth + clearance);
+            return newEndpoint;
         }
     }
 }
