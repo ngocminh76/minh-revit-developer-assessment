@@ -4,7 +4,6 @@ using Autodesk.Revit.UI;
 using MyRevitAddin.Features.Structural.AdjustBeam.Logic;
 using MyRevitAddin.Features.Structural.AdjustBeam.ViewModels;
 using MyRevitAddin.Features.Structural.AdjustBeam.Views;
-using TaskDialog = Autodesk.Revit.UI.TaskDialog;
 
 namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
 {
@@ -16,19 +15,14 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
             UIDocument uidoc = commandData.Application.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            // Check if there are selected elements
-            var selectedIds = uidoc.Selection.GetElementIds();
-            if (selectedIds == null || selectedIds.Count == 0)
-            {
-                TaskDialog.Show("Error", "Please select beams, columns, and walls before running the tool.");
-                return Result.Cancelled;
-            }
+            // Lấy danh sách chọn trước (nếu có)
+            var selectedIds = uidoc.Selection.GetElementIds() as ICollection<ElementId> ?? new List<ElementId>();
 
             try
             {
                 var viewModel = new AdjustBeamViewModel();
                 var window = new AdjustBeamWindow(viewModel);
-                
+
                 // Gắn View vào ViewModel để nó có thể tự Close()
                 viewModel.AdjustBeamView = window;
 
@@ -38,8 +32,30 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
                 // Người dùng đã bấm OK
                 if (viewModel.IsOKClicked)
                 {
-                    var adjuster = new BeamAdjuster();
-                    adjuster.AdjustBeams(doc, selectedIds, viewModel.Config);
+                    // Nếu chưa chọn gì trước đó, cho phép PickObjects
+                    if (selectedIds.Count == 0)
+                    {
+                        try
+                        {
+                            var pickedRefs = uidoc.Selection.PickObjects(Autodesk.Revit.UI.Selection.ObjectType.Element, "Please select beams, columns, and walls to adjust.");
+                            selectedIds = new List<ElementId>();
+                            foreach (var r in pickedRefs)
+                            {
+                                selectedIds.Add(r.ElementId);
+                            }
+                        }
+                        catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+                        {
+                            // Người dùng bấm ESC khi đang quét chuột
+                            return Result.Cancelled;
+                        }
+                    }
+
+                    if (selectedIds.Count > 0)
+                    {
+                        var adjuster = new BeamAdjuster();
+                        adjuster.AdjustBeams(doc, selectedIds, viewModel.Config);
+                    }
                 }
 
                 return Result.Succeeded;
