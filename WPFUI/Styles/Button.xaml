@@ -8,7 +8,7 @@
     <!-- ================================================================= -->
     <!-- Button Style -->
     <!-- ================================================================= -->
-    <Style TargetType="{x:Type Button}">
+    <Style x:Key="ButtonStyle" TargetType="{x:Type Button}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}" />
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>

@@ -8,7 +8,7 @@
     <!-- ================================================================= -->
     <!-- TextBox & PasswordBox Styles -->
     <!-- ================================================================= -->
-    <Style TargetType="{x:Type TextBox}">
+    <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBox}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}" />
         <Setter Property="Foreground" Value="{StaticResource BrushText}" />
         <Setter Property="Background" Value="{StaticResource BrushBgControl}" />
@@ -52,7 +52,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="{x:Type PasswordBox}">
+    <Style x:Key="PasswordBoxStyle" TargetType="{x:Type PasswordBox}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}" />
         <Setter Property="Foreground" Value="{StaticResource BrushText}" />
         <Setter Property="Background" Value="{StaticResource BrushBgControl}" />

@@ -8,7 +8,7 @@
     <!-- ================================================================= -->
     <!-- ProgressBar Style -->
     <!-- ================================================================= -->
-    <Style TargetType="{x:Type ProgressBar}">
+    <Style x:Key="ProgressBarStyle" TargetType="{x:Type ProgressBar}">
         <Setter Property="Background" Value="{StaticResource BrushBgControlDisabled}"/>
         <Setter Property="Foreground" Value="{StaticResource BrushPrimary}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>

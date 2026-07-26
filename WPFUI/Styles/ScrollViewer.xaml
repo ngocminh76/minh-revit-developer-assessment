@@ -149,7 +149,7 @@
     </Style>
 
     <!-- Implicit ScrollBar Style (Ensures standalone scrollbars adopt these templates) -->
-    <Style TargetType="{x:Type ScrollBar}">
+    <Style x:Key="ScrollBarStyle" TargetType="{x:Type ScrollBar}">
         <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
         <Setter Property="Stylus.IsFlicksEnabled" Value="false"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -216,6 +216,6 @@
     </Style>
 
     <!-- Implicit ScrollViewer Style (Applies to all ScrollViewers, DataGrids, ListViews, etc.) -->
-    <Style TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource SlimScrollViewerStyle}"/>
+    <Style x:Key="ScrollViewerStyle" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource SlimScrollViewerStyle}"/>
 
 </ResourceDictionary>

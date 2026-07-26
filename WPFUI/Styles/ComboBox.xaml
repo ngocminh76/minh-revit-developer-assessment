@@ -41,7 +41,7 @@
     </ControlTemplate>
 
     <!-- ComboBox Item Style -->
-    <Style TargetType="{x:Type ComboBoxItem}">
+    <Style x:Key="ComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}"/>
         <Setter Property="Foreground" Value="{StaticResource BrushText}"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -78,7 +78,7 @@
     </Style>
 
     <!-- Main ComboBox Style -->
-    <Style TargetType="{x:Type ComboBox}">
+    <Style x:Key="ComboBoxStyle" TargetType="{x:Type ComboBox}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}"/>
         <Setter Property="Foreground" Value="{StaticResource BrushText}"/>
         <Setter Property="Background" Value="{StaticResource BrushBgControl}"/>

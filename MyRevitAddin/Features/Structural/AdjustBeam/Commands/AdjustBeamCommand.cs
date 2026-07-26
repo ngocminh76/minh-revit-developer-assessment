@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using MyRevitAddin.Features.Structural.AdjustBeam.Logic;
 using MyRevitAddin.Features.Structural.AdjustBeam.ViewModels;
 using MyRevitAddin.Features.Structural.AdjustBeam.Views;
-using MyRevitAddin.Features.Structural.AdjustBeam.Logic;
+using TaskDialog = Autodesk.Revit.UI.TaskDialog;
 
 namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
 {
@@ -22,21 +20,27 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Commands
             var selectedIds = uidoc.Selection.GetElementIds();
             if (selectedIds == null || selectedIds.Count == 0)
             {
-                Autodesk.Revit.UI.TaskDialog.Show("Error", "Please select beams, columns, and walls before running the tool.");
+                TaskDialog.Show("Error", "Please select beams, columns, and walls before running the tool.");
                 return Result.Cancelled;
             }
 
             try
             {
                 var viewModel = new AdjustBeamViewModel();
-                viewModel.AdjustAction = (config) =>
+                var window = new AdjustBeamWindow(viewModel);
+                
+                // Gắn View vào ViewModel để nó có thể tự Close()
+                viewModel.AdjustBeamView = window;
+
+                // Hiển thị dạng Modal, code sẽ dừng ở đây chờ người dùng đóng cửa sổ
+                window.ShowDialog();
+
+                // Người dùng đã bấm OK
+                if (viewModel.IsOKClicked)
                 {
                     var adjuster = new BeamAdjuster();
-                    adjuster.AdjustBeams(doc, selectedIds, config);
-                };
-
-                var window = new AdjustBeamWindow(viewModel);
-                window.ShowDialog();
+                    adjuster.AdjustBeams(doc, selectedIds, viewModel.Config);
+                }
 
                 return Result.Succeeded;
             }

@@ -1,8 +1,8 @@
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
 using System;
 using System.IO;
 using System.Linq;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
 
 namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
 {
@@ -12,11 +12,9 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
     /// </summary>
     public class BeamEndCutter
     {
-        private const double AngleThreshold = 0.9998; // ~1° → bỏ qua nếu gần trùng
 
         private Family _voidFamily;
         private FamilySymbol _voidSymbol;
-
         /// <summary>
         /// <param name="doc">Document</param>
         /// <param name="beam">Dầm cần cắt</param>
@@ -25,15 +23,9 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
         /// <param name="cutNormal">Pháp tuyến mặt cắt (hướng ra ngoài dầm, về phía cột)</param>
         public void CutBeamEnd(Document doc, FamilyInstance beam, XYZ cutOrigin, XYZ beamOutwardDir, XYZ cutNormal)
         {
-            string logPath = @"D:\03.MINH\REVIT\RevitTest\beam_adjust_log.txt";
-
             // 1. Tạo/lấy void symbol
             FamilySymbol symbol = GetOrCreateVoidSymbol(doc);
-            if (symbol == null)
-            {
-                Log(logPath, "[ERROR] Void symbol = NULL");
-                return;
-            }
+            if (symbol == null) return;
 
             // 2. Đặt void tại cutOrigin
             FamilyInstance voidInst = null;
@@ -41,11 +33,9 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             {
                 voidInst = doc.Create.NewFamilyInstance(
                     cutOrigin, symbol, StructuralType.NonStructural);
-                Log(logPath, $"[OK] Void created: Id={voidInst.Id}");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Log(logPath, $"[ERROR] NewFamilyInstance: {ex.Message}");
                 return;
             }
 
@@ -58,46 +48,28 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                     Line zAxis = Line.CreateBound(cutOrigin, cutOrigin + XYZ.BasisZ);
                     ElementTransformUtils.RotateElement(doc, voidInst.Id, zAxis, angle);
                 }
-                Log(logPath, $"[OK] Rotated {angle * 180 / Math.PI:F2}°");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Log(logPath, $"[ERROR] Rotate: {ex.Message}");
             }
 
             // 4. Áp dụng cut
             bool canCut = InstanceVoidCutUtils.CanBeCutWithVoid(beam);
-            Log(logPath, $"[CHECK] CanBeCutWithVoid(beam {beam.Id}) = {canCut}");
 
             try
             {
                 if (canCut)
                 {
                     InstanceVoidCutUtils.AddInstanceVoidCut(doc, beam, voidInst);
-                    Log(logPath, $"[OK] InstanceVoidCut: beam={beam.Id}, void={voidInst.Id}");
                 }
                 else
                 {
                     SolidSolidCutUtils.AddCutBetweenSolids(doc, beam, voidInst);
-                    Log(logPath, $"[OK] SolidSolidCut: beam={beam.Id}, void={voidInst.Id}");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Log(logPath, $"[ERROR] Cut failed: {ex.Message}");
             }
-
-            // 5. Summary
-            Log(logPath, $"\n--- OPENING CUT: Dầm [{beam.Id}] ---\n"
-                + $"  cutOrigin:      ({cutOrigin.X:F6}, {cutOrigin.Y:F6}, {cutOrigin.Z:F6})\n"
-                + $"  beamOutwardDir: ({beamOutwardDir.X:F6}, {beamOutwardDir.Y:F6})\n"
-                + $"  cutNormal:      ({cutNormal.X:F6}, {cutNormal.Y:F6})\n"
-                + $"  voidId:         {voidInst.Id}\n");
-        }
-
-        private void Log(string path, string msg)
-        {
-            try { File.AppendAllText(path, msg + "\n"); } catch { }
         }
 
         #region Private: Void Family
@@ -153,8 +125,8 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 {
                     tx.Start();
 
-                    double size = 5.0;  // 5 ft ≈ 1524mm (nửa cạnh)
-                    double depth = 3.0; // 3 ft ≈ 914mm (độ sâu cắt)
+                    double size = 15.0;  // 15 ft ≈ 4572mm (nửa cạnh hộp)
+                    double depth = 10.0; // 10 ft ≈ 3048mm (độ sâu cắt)
 
                     // Profile trên mặt phẳng YZ (vuông góc trục X)
                     XYZ p1 = new XYZ(0, -size, -size);
@@ -200,14 +172,8 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
 
                 try { File.Delete(tempPath); } catch { }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                try
-                {
-                    string logPath = @"D:\03.MINH\REVIT\RevitTest\beam_adjust_log.txt";
-                    File.AppendAllText(logPath, $"\n[ERROR] CreateVoidFamily: {ex.Message}\n");
-                }
-                catch { }
             }
             finally
             {
@@ -247,65 +213,6 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
 
             return null;
         }
-
-        #endregion
-
-        #region Private: Top Face
-
-        private PlanarFace FindTopFace(Element element)
-        {
-            PlanarFace bestFace = null;
-            double bestArea = 0;
-
-            GeometryElement geomElem = element.get_Geometry(new Options { ComputeReferences = true });
-            if (geomElem == null) return null;
-
-            foreach (GeometryObject geomObj in geomElem)
-            {
-                Solid solid = geomObj as Solid;
-                if (solid == null)
-                {
-                    if (geomObj is GeometryInstance geomInst)
-                    {
-                        GeometryElement instGeom = geomInst.GetInstanceGeometry();
-                        foreach (GeometryObject instObj in instGeom)
-                        {
-                            if (instObj is Solid s && s.Volume > 0)
-                            {
-                                PlanarFace pf = GetTopFaceInSolid(s, ref bestArea);
-                                if (pf != null) bestFace = pf;
-                            }
-                        }
-                    }
-                }
-                else if (solid.Volume > 0)
-                {
-                    PlanarFace pf = GetTopFaceInSolid(solid, ref bestArea);
-                    if (pf != null) bestFace = pf;
-                }
-            }
-
-            return bestFace;
-        }
-
-        private PlanarFace GetTopFaceInSolid(Solid solid, ref double bestArea)
-        {
-            PlanarFace bestFace = null;
-            foreach (Face face in solid.Faces)
-            {
-                if (face is PlanarFace pf)
-                {
-                    if (pf.FaceNormal.Z < 0.9) continue;
-                    if (pf.Area > bestArea)
-                    {
-                        bestArea = pf.Area;
-                        bestFace = pf;
-                    }
-                }
-            }
-            return bestFace;
-        }
-
         #endregion
     }
 }

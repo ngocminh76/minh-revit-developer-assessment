@@ -7,13 +7,9 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Views
     {
         public AdjustBeamWindow(AdjustBeamViewModel viewModel)
         {
+            WPFUI.ThemeManager.Initialize();
             InitializeComponent();
             DataContext = viewModel;
-            viewModel.CloseAction = () =>
-            {
-                this.DialogResult = true;
-                this.Close();
-            };
         }
     }
 }

@@ -8,14 +8,14 @@
     <!-- ================================================================= -->
     <!-- TextBlock Style -->
     <!-- ================================================================= -->
-    <Style TargetType="{x:Type TextBlock}">
+    <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}" />
         <Setter Property="Foreground" Value="{StaticResource BrushText}" />
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <!-- Label Style (Implicitly inherits Font & Text properties) -->
-    <Style TargetType="{x:Type Label}">
+    <Style x:Key="LabelStyle" TargetType="{x:Type Label}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}" />
         <Setter Property="Foreground" Value="{StaticResource BrushText}" />
         <Setter Property="Padding" Value="0,4" />

@@ -8,7 +8,7 @@
     <!-- ================================================================= -->
     <!-- GroupBox Style -->
     <!-- ================================================================= -->
-    <Style TargetType="{x:Type GroupBox}">
+    <Style x:Key="GroupBoxStyle" TargetType="{x:Type GroupBox}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>

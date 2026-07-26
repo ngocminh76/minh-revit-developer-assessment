@@ -20,18 +20,18 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.ViewModels
             "Default"
         };
 
-        public ICommand AdjustCommand { get; }
+        public MyCmd AdjustCommand { get; }
 
-        public Action CloseAction { get; set; }
-        public Action<AdjustBeamConfig> AdjustAction { get; set; }
+        public bool IsOKClicked { get; set; } = false;
+        public Views.AdjustBeamWindow AdjustBeamView { get; set; }
 
         public AdjustBeamViewModel()
         {
             Config = new AdjustBeamConfig();
             AdjustCommand = new MyCmd(() =>
             {
-                AdjustAction?.Invoke(Config);
-                CloseAction?.Invoke();
+                IsOKClicked = true;
+                AdjustBeamView?.Close();
             }, null);
         }
     }

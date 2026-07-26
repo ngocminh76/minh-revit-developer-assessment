@@ -9,7 +9,7 @@
     <!-- DataGrid Style -->
     <!-- ================================================================= -->
     <!-- Column Header -->
-    <Style TargetType="{x:Type DataGridColumnHeader}">
+    <Style x:Key="DataGridColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource BrushText}"/>
@@ -36,7 +36,7 @@
     </Style>
 
     <!-- Cells -->
-    <Style TargetType="{x:Type DataGridCell}">
+    <Style x:Key="DataGridCellStyle" TargetType="{x:Type DataGridCell}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}"/>
         <Setter Property="Foreground" Value="{StaticResource BrushText}"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -68,7 +68,7 @@
     </Style>
 
     <!-- Row -->
-    <Style TargetType="{x:Type DataGridRow}">
+    <Style x:Key="DataGridRowStyle" TargetType="{x:Type DataGridRow}">
         <Setter Property="Background" Value="{StaticResource BrushBgCard}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
@@ -81,7 +81,7 @@
     </Style>
 
     <!-- Main DataGrid Style -->
-    <Style TargetType="{x:Type DataGrid}">
+    <Style x:Key="DataGridStyle" TargetType="{x:Type DataGrid}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}"/>
         <Setter Property="Background" Value="{StaticResource BrushBgCard}"/>
         <Setter Property="RowBackground" Value="{StaticResource BrushBgCard}"/>

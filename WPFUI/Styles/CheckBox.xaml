@@ -8,7 +8,7 @@
     <!-- ================================================================= -->
     <!-- CheckBox Style -->
     <!-- ================================================================= -->
-    <Style TargetType="{x:Type CheckBox}">
+    <Style x:Key="CheckBoxStyle" TargetType="{x:Type CheckBox}">
         <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}"/>
         <Setter Property="Foreground" Value="{StaticResource BrushText}"/>
         <Setter Property="Background" Value="{StaticResource BrushBgControl}"/>
