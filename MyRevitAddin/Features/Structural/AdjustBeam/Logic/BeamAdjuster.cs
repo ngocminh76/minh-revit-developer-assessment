@@ -149,8 +149,8 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             Wall nearWall = FindNearestWall(endpoint);
             if (nearWall != null)
             {
-                // ▶ TH1: Dầm tại tường → clearance từ mép tường
-                return ComputeWallEndpoint(endpoint, outwardDir, nearWall, wallCl);
+                // ▶ TH1: Dầm tại tường → clearance từ mép ngoài cùng của tường
+                return ComputeGapFromFaces(beam, endpoint, outwardDir, nearWall, wallCl);
             }
 
             // ═══════ Ưu tiên 3: DẦM VUÔNG GÓC ═══════
@@ -314,6 +314,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
         {
             PlanarFace bestFace = null;
             double bestDot = -1;
+            double bestProjection = double.MinValue;
 
             GeometryElement geomElem = element.get_Geometry(new Options { ComputeReferences = true });
             if (geomElem == null) return null;
@@ -330,7 +331,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                         {
                             if (instObj is Solid s && s.Volume > 0)
                             {
-                                PlanarFace pf = GetBestFacingFaceInSolid(s, outwardDir, ref bestDot);
+                                PlanarFace pf = GetBestFacingFaceInSolid(s, outwardDir, ref bestDot, ref bestProjection);
                                 if (pf != null) bestFace = pf;
                             }
                         }
@@ -338,7 +339,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
                 }
                 else if (solid.Volume > 0)
                 {
-                    PlanarFace pf = GetBestFacingFaceInSolid(solid, outwardDir, ref bestDot);
+                    PlanarFace pf = GetBestFacingFaceInSolid(solid, outwardDir, ref bestDot, ref bestProjection);
                     if (pf != null) bestFace = pf;
                 }
             }
@@ -346,7 +347,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             return bestFace;
         }
 
-        private PlanarFace GetBestFacingFaceInSolid(Solid solid, XYZ outwardDir, ref double bestDot)
+        private PlanarFace GetBestFacingFaceInSolid(Solid solid, XYZ outwardDir, ref double bestDot, ref double bestProjection)
         {
             PlanarFace bestFace = null;
             foreach (Face face in solid.Faces)
@@ -360,10 +361,27 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
 
                     // Tìm mặt có pháp tuyến trùng hướng outwardDir nhất
                     double dot = outwardDir.DotProduct(pf.FaceNormal);
-                    if (dot > bestDot)
+                    
+                    // Khoảng cách từ gốc tọa độ đến mặt phẳng dọc theo pháp tuyến của nó.
+                    // Mặt có giá trị này lớn nhất (trong số các mặt song song) chính là mặt ngoài cùng.
+                    double projection = pf.Origin.DotProduct(pf.FaceNormal);
+
+                    // Nếu hướng tốt hơn rõ rệt
+                    if (dot > bestDot + 0.01)
                     {
                         bestDot = dot;
+                        bestProjection = projection;
                         bestFace = pf;
+                    }
+                    // Nếu hướng gần như song song với mặt tốt nhất hiện tại, ưu tiên mặt NẰM NGOÀI CÙNG
+                    else if (Math.Abs(dot - bestDot) <= 0.01)
+                    {
+                        if (projection > bestProjection)
+                        {
+                            bestDot = dot;
+                            bestProjection = projection;
+                            bestFace = pf;
+                        }
                     }
                 }
             }
@@ -379,49 +397,7 @@ namespace MyRevitAddin.Features.Structural.AdjustBeam.Logic
             return ComputeGapFromFaces(beam, endpoint, outwardDir, column, clearance);
         }
 
-        #region TH1: Dầm tại tường (TOÁN HỌC - Mặt phẳng)
 
-        /// <summary>
-        /// Tính mép tường bằng mặt phẳng (centerLine ± width/2).
-        /// Giao đường dầm với mặt phẳng tường → facePoint.
-        /// ĐầuDầmMới = facePoint + inwardDir * clearance
-        /// </summary>
-        private XYZ ComputeWallEndpoint(XYZ endpoint, XYZ outwardDir, Wall wall, double clearance)
-        {
-            XYZ inwardDir = outwardDir.Negate();
-
-            LocationCurve wallLoc = wall.Location as LocationCurve;
-            if (wallLoc == null) return endpoint;
-            Line wallLine = wallLoc.Curve as Line;
-            if (wallLine == null) return endpoint;
-
-            XYZ wallDir = wallLine.Direction;
-            // Pháp tuyến tường (vuông góc với hướng tường, trong mặt phẳng XY)
-            XYZ wallNormal = new XYZ(-wallDir.Y, wallDir.X, 0).Normalize();
-            double halfWidth = wall.Width / 2.0;
-
-            XYZ wallOrigin = wallLine.GetEndPoint(0);
-
-            // Khoảng cách có dấu từ endpoint đến mặt phẳng trung tâm tường
-            double distToCenter = (endpoint - wallOrigin).DotProduct(wallNormal);
-
-            // Xác định mặt tường phía dầm tiếp cận
-            double inwardDotNormal = inwardDir.DotProduct(wallNormal);
-            if (Math.Abs(inwardDotNormal) < 1e-10) return endpoint; // dầm song song tường
-
-            double faceOffset = Math.Sign(inwardDotNormal) * halfWidth;
-
-            // Tìm giao điểm đường dầm với mặt phẳng tường
-            double outwardDotNormal = outwardDir.DotProduct(wallNormal);
-            if (Math.Abs(outwardDotNormal) < 1e-10) return endpoint;
-
-            double t = (distToCenter - faceOffset) / outwardDotNormal;
-            XYZ facePoint = endpoint - outwardDir * t;
-
-            return facePoint + inwardDir * clearance;
-        }
-
-        #endregion
 
         #region TH4: Dầm vuông góc (TOÁN HỌC)
 
